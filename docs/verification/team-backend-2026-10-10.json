@@ -1,0 +1,18 @@
+{
+  "passed": 13,
+  "checks": [
+    "own task, one public example, C++ policy",
+    "Run Accepted with stdout 2",
+    "Submit Accepted 4/4",
+    "benchmark and metrics",
+    "public expected and actual results",
+    "hidden results redacted",
+    "Wrong Answer 2/4, no benchmark",
+    "Compilation Error with diagnostics",
+    "Runtime Error",
+    "TLE and interrupted index",
+    "empty source rejected",
+    "invalid function input forwarded as 400",
+    "unknown local job rejected"
+  ]
+}

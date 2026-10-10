@@ -1,0 +1,26 @@
+# Build artifacts and editor files
+frontend/node_modules/
+frontend/dist/
+backend/target/
+backend/.idea/
+backend/.vscode/
+.DS_Store
+
+# Local secrets and configuration; commit templates only
+.env
+.env.*
+!.env.example
+infra/judge0.conf
+*.log
+
+# Local infrastructure experiments and downloaded installers
+work/
+piston-repro/
+judge0-macos-repro/
+*.iso
+test/main
+test/program
+
+examples/team-backend/target/
+
+deliverables/

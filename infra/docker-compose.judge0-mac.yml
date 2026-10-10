@@ -1,0 +1,11 @@
+# Lokalny wariant eksperymentalny dla Apple Silicon.
+# Wymaga nieoficjalnego obrazu z poprawką cgroups; nie wystawiać poza localhost.
+services:
+  server:
+    image: mrkushalsm/judge0@sha256:d60605ad448453ac3754629bc7121d379cf691e0c091aabbc03ff2886b2626b2
+    platform: linux/amd64
+
+  workers:
+    image: mrkushalsm/judge0@sha256:d60605ad448453ac3754629bc7121d379cf691e0c091aabbc03ff2886b2626b2
+    platform: linux/amd64
+    cgroup: host

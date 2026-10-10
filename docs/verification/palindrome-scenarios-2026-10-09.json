@@ -1,0 +1,197 @@
+[
+  {
+    "language": "CPP",
+    "solution": "optimal",
+    "state": "FINISHED",
+    "status": "ACCEPTED",
+    "passed": 50,
+    "total": 50,
+    "runtimeMs": 30,
+    "peakMemoryBytes": 4292000,
+    "benchmark": {
+      "status": "COMPLETED",
+      "warmupRuns": 2,
+      "measuredRuns": 5,
+      "medianRuntimeMs": 30.0,
+      "peakMemoryBytes": 4292000
+    },
+    "acceptanceMs": 44,
+    "waitingSeconds": 5.59,
+    "states": [
+      "QUEUED",
+      "RUNNING",
+      "FINISHED"
+    ],
+    "error": null
+  },
+  {
+    "language": "CPP",
+    "solution": "naive",
+    "state": "FINISHED",
+    "status": "TIME_LIMIT_EXCEEDED",
+    "passed": 0,
+    "total": 50,
+    "runtimeMs": null,
+    "peakMemoryBytes": null,
+    "benchmark": null,
+    "acceptanceMs": 9,
+    "waitingSeconds": 4.31,
+    "states": [
+      "QUEUED",
+      "RUNNING",
+      "FINISHED"
+    ],
+    "error": null
+  },
+  {
+    "language": "CPP",
+    "solution": "wrong",
+    "state": "FINISHED",
+    "status": "WRONG_ANSWER",
+    "passed": 1,
+    "total": 50,
+    "runtimeMs": null,
+    "peakMemoryBytes": null,
+    "benchmark": null,
+    "acceptanceMs": 6,
+    "waitingSeconds": 2.15,
+    "states": [
+      "QUEUED",
+      "RUNNING",
+      "FINISHED"
+    ],
+    "error": null
+  },
+  {
+    "language": "PYTHON",
+    "solution": "optimal",
+    "state": "FINISHED",
+    "status": "ACCEPTED",
+    "passed": 50,
+    "total": 50,
+    "runtimeMs": 120,
+    "peakMemoryBytes": 10360000,
+    "benchmark": {
+      "status": "COMPLETED",
+      "warmupRuns": 2,
+      "measuredRuns": 5,
+      "medianRuntimeMs": 120.0,
+      "peakMemoryBytes": 10360000
+    },
+    "acceptanceMs": 4,
+    "waitingSeconds": 5.23,
+    "states": [
+      "QUEUED",
+      "RUNNING",
+      "FINISHED"
+    ],
+    "error": null
+  },
+  {
+    "language": "PYTHON",
+    "solution": "naive",
+    "state": "FINISHED",
+    "status": "TIME_LIMIT_EXCEEDED",
+    "passed": 0,
+    "total": 50,
+    "runtimeMs": null,
+    "peakMemoryBytes": null,
+    "benchmark": null,
+    "acceptanceMs": 6,
+    "waitingSeconds": 3.4,
+    "states": [
+      "QUEUED",
+      "RUNNING",
+      "FINISHED"
+    ],
+    "error": null
+  },
+  {
+    "language": "PYTHON",
+    "solution": "wrong",
+    "state": "FINISHED",
+    "status": "WRONG_ANSWER",
+    "passed": 1,
+    "total": 50,
+    "runtimeMs": null,
+    "peakMemoryBytes": null,
+    "benchmark": null,
+    "acceptanceMs": 9,
+    "waitingSeconds": 1.24,
+    "states": [
+      "QUEUED",
+      "RUNNING",
+      "FINISHED"
+    ],
+    "error": null
+  },
+  {
+    "language": "JAVA",
+    "solution": "optimal",
+    "state": "FINISHED",
+    "status": "ACCEPTED",
+    "passed": 50,
+    "total": 50,
+    "runtimeMs": 323,
+    "peakMemoryBytes": 27148000,
+    "benchmark": {
+      "status": "COMPLETED",
+      "warmupRuns": 2,
+      "measuredRuns": 5,
+      "medianRuntimeMs": 323.0,
+      "peakMemoryBytes": 27148000
+    },
+    "acceptanceMs": 4,
+    "waitingSeconds": 10.45,
+    "states": [
+      "QUEUED",
+      "RUNNING",
+      "FINISHED"
+    ],
+    "error": null
+  },
+  {
+    "language": "JAVA",
+    "solution": "naive",
+    "state": "FINISHED",
+    "status": "ACCEPTED",
+    "passed": 50,
+    "total": 50,
+    "runtimeMs": 654,
+    "peakMemoryBytes": 30132000,
+    "benchmark": {
+      "status": "COMPLETED",
+      "warmupRuns": 2,
+      "measuredRuns": 5,
+      "medianRuntimeMs": 654.0,
+      "peakMemoryBytes": 30132000
+    },
+    "acceptanceMs": 5,
+    "waitingSeconds": 12.57,
+    "states": [
+      "QUEUED",
+      "RUNNING",
+      "FINISHED"
+    ],
+    "error": null
+  },
+  {
+    "language": "JAVA",
+    "solution": "wrong",
+    "state": "FINISHED",
+    "status": "WRONG_ANSWER",
+    "passed": 1,
+    "total": 50,
+    "runtimeMs": null,
+    "peakMemoryBytes": null,
+    "benchmark": null,
+    "acceptanceMs": 5,
+    "waitingSeconds": 5.21,
+    "states": [
+      "QUEUED",
+      "RUNNING",
+      "FINISHED"
+    ],
+    "error": null
+  }
+]

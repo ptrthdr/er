@@ -1,0 +1,433 @@
+{
+  "waitingSeconds": 9.53,
+  "job": {
+    "submissionId": "d79e0218-2a15-4276-b9fb-40e06f652b9a",
+    "state": "FINISHED",
+    "createdAt": "2026-10-09T21:48:23.549476Z",
+    "startedAt": "2026-10-09T21:48:23.549533Z",
+    "finishedAt": "2026-10-09T21:48:32.791044Z",
+    "result": {
+      "status": "ACCEPTED",
+      "passedTests": 50,
+      "totalTests": 50,
+      "runtimeMs": 1,
+      "peakMemoryBytes": 32208000,
+      "compileOutput": null,
+      "testResults": [
+        {
+          "testNumber": 1,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": "3\n",
+          "stderr": ""
+        },
+        {
+          "testNumber": 2,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": "2\n",
+          "stderr": ""
+        },
+        {
+          "testNumber": 3,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": "0\n",
+          "stderr": ""
+        },
+        {
+          "testNumber": 4,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 5,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 6,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 7,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 8,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 9,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 10,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 11,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 12,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 13,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 14,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 15,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 16,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 17,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 18,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 19,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 20,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 21,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 22,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 23,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 24,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 25,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 26,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 27,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 28,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 29,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 30,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 31,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 32,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 33,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 34,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 35,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 36,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 37,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 38,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 39,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 40,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 41,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 42,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 43,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 44,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 45,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 46,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 47,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 48,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 49,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        },
+        {
+          "testNumber": 50,
+          "status": "ACCEPTED",
+          "runtimeMs": null,
+          "peakMemoryBytes": null,
+          "output": null,
+          "stderr": null
+        }
+      ],
+      "engineStatus": null,
+      "message": null,
+      "benchmark": {
+        "status": "COMPLETED",
+        "warmupRuns": 2,
+        "measuredRuns": 5,
+        "medianRuntimeMs": 1.108083,
+        "peakMemoryBytes": 32208000,
+        "measurementScope": "FUNCTION_CALLS_ELAPSED",
+        "measurementTrust": "IN_PROCESS_UNTRUSTED",
+        "sandboxCpuTimeMs": 420.0
+      }
+    },
+    "error": null
+  }
+}

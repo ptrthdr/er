@@ -1,0 +1,209 @@
+[
+  {
+    "language": "CPP",
+    "solution": "optimal",
+    "state": "FINISHED",
+    "status": "ACCEPTED",
+    "passed": 50,
+    "total": 50,
+    "runtimeMs": 1,
+    "peakMemoryBytes": 4060000,
+    "benchmark": {
+      "status": "COMPLETED",
+      "warmupRuns": 2,
+      "measuredRuns": 5,
+      "medianRuntimeMs": 0.553917,
+      "peakMemoryBytes": 4060000,
+      "measurementScope": "FUNCTION_CALLS_ELAPSED",
+      "measurementTrust": "IN_PROCESS_UNTRUSTED",
+      "sandboxCpuTimeMs": 48.0
+    },
+    "acceptanceMs": 31,
+    "waitingSeconds": 3.4,
+    "states": [
+      "QUEUED",
+      "RUNNING",
+      "FINISHED"
+    ],
+    "error": null
+  },
+  {
+    "language": "CPP",
+    "solution": "naive",
+    "state": "FINISHED",
+    "status": "TIME_LIMIT_EXCEEDED",
+    "passed": 0,
+    "total": 50,
+    "runtimeMs": null,
+    "peakMemoryBytes": null,
+    "benchmark": null,
+    "acceptanceMs": 4,
+    "waitingSeconds": 5.22,
+    "states": [
+      "QUEUED",
+      "RUNNING",
+      "FINISHED"
+    ],
+    "error": null
+  },
+  {
+    "language": "CPP",
+    "solution": "wrong",
+    "state": "FINISHED",
+    "status": "WRONG_ANSWER",
+    "passed": 1,
+    "total": 50,
+    "runtimeMs": null,
+    "peakMemoryBytes": null,
+    "benchmark": null,
+    "acceptanceMs": 8,
+    "waitingSeconds": 2.16,
+    "states": [
+      "QUEUED",
+      "RUNNING",
+      "FINISHED"
+    ],
+    "error": null
+  },
+  {
+    "language": "PYTHON",
+    "solution": "optimal",
+    "state": "FINISHED",
+    "status": "ACCEPTED",
+    "passed": 50,
+    "total": 50,
+    "runtimeMs": 42,
+    "peakMemoryBytes": 11528000,
+    "benchmark": {
+      "status": "COMPLETED",
+      "warmupRuns": 2,
+      "measuredRuns": 5,
+      "medianRuntimeMs": 41.749833,
+      "peakMemoryBytes": 11528000,
+      "measurementScope": "FUNCTION_CALLS_ELAPSED",
+      "measurementTrust": "IN_PROCESS_UNTRUSTED",
+      "sandboxCpuTimeMs": 427.0
+    },
+    "acceptanceMs": 8,
+    "waitingSeconds": 2.15,
+    "states": [
+      "QUEUED",
+      "RUNNING",
+      "FINISHED"
+    ],
+    "error": null
+  },
+  {
+    "language": "PYTHON",
+    "solution": "naive",
+    "state": "FINISHED",
+    "status": "TIME_LIMIT_EXCEEDED",
+    "passed": 0,
+    "total": 50,
+    "runtimeMs": null,
+    "peakMemoryBytes": null,
+    "benchmark": null,
+    "acceptanceMs": 4,
+    "waitingSeconds": 3.38,
+    "states": [
+      "QUEUED",
+      "RUNNING",
+      "FINISHED"
+    ],
+    "error": null
+  },
+  {
+    "language": "PYTHON",
+    "solution": "wrong",
+    "state": "FINISHED",
+    "status": "WRONG_ANSWER",
+    "passed": 1,
+    "total": 50,
+    "runtimeMs": null,
+    "peakMemoryBytes": null,
+    "benchmark": null,
+    "acceptanceMs": 4,
+    "waitingSeconds": 1.24,
+    "states": [
+      "QUEUED",
+      "RUNNING",
+      "FINISHED"
+    ],
+    "error": null
+  },
+  {
+    "language": "JAVA",
+    "solution": "optimal",
+    "state": "FINISHED",
+    "status": "ACCEPTED",
+    "passed": 50,
+    "total": 50,
+    "runtimeMs": 2,
+    "peakMemoryBytes": 32004000,
+    "benchmark": {
+      "status": "COMPLETED",
+      "warmupRuns": 2,
+      "measuredRuns": 5,
+      "medianRuntimeMs": 1.534334,
+      "peakMemoryBytes": 32004000,
+      "measurementScope": "FUNCTION_CALLS_ELAPSED",
+      "measurementTrust": "IN_PROCESS_UNTRUSTED",
+      "sandboxCpuTimeMs": 382.0
+    },
+    "acceptanceMs": 6,
+    "waitingSeconds": 6.44,
+    "states": [
+      "QUEUED",
+      "RUNNING",
+      "FINISHED"
+    ],
+    "error": null
+  },
+  {
+    "language": "JAVA",
+    "solution": "naive",
+    "state": "FINISHED",
+    "status": "ACCEPTED",
+    "passed": 50,
+    "total": 50,
+    "runtimeMs": 264,
+    "peakMemoryBytes": 31500000,
+    "benchmark": {
+      "status": "COMPLETED",
+      "warmupRuns": 2,
+      "measuredRuns": 5,
+      "medianRuntimeMs": 263.69129200000003,
+      "peakMemoryBytes": 31500000,
+      "measurementScope": "FUNCTION_CALLS_ELAPSED",
+      "measurementTrust": "IN_PROCESS_UNTRUSTED",
+      "sandboxCpuTimeMs": 2256.0
+    },
+    "acceptanceMs": 3,
+    "waitingSeconds": 8.31,
+    "states": [
+      "QUEUED",
+      "RUNNING",
+      "FINISHED"
+    ],
+    "error": null
+  },
+  {
+    "language": "JAVA",
+    "solution": "wrong",
+    "state": "FINISHED",
+    "status": "WRONG_ANSWER",
+    "passed": 1,
+    "total": 50,
+    "runtimeMs": null,
+    "peakMemoryBytes": null,
+    "benchmark": null,
+    "acceptanceMs": 5,
+    "waitingSeconds": 5.21,
+    "states": [
+      "QUEUED",
+      "RUNNING",
+      "FINISHED"
+    ],
+    "error": null
+  }
+]

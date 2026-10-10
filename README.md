@@ -1,59 +1,59 @@
-# Judge0 CE 1.13.1 — reprodukcja problemu z Docker Desktop
+# CodeLobby — moduł wykonywania kodu
 
-Mały projekt do sprawdzenia, czy oficjalny Judge0 CE 1.13.1 uruchamia i wykonuje zgłoszenie C++ w Docker Desktop. Usługi i wersje obrazów są przypięte w `docker-compose.yml`.
+Lokalny moduł Spring Boot + Judge0 oraz demonstrator CodeMirror 6.
+Obsługiwane języki: **C++, Python, Java**. Judge0 jest domyślnym silnikiem;
+Piston pozostaje opcjonalnym wariantem porównawczym.
 
-## Wymagania
+## Start dla zespołu
 
-- Docker Desktop z działającym silnikiem Docker
-- `curl`
+**Zacznij od [przewodnika zespołu](docs/TEAM-START-HERE.md).**
+Pakiet lokalny przygotowuje `python3 scripts/package-handoff.py`.
 
-## Uruchomienie
 
-W terminalu, w tym katalogu:
+Pełna instrukcja: [uruchomienie lokalne](docs/local-development.md).
+Domyślne adresy: frontend `http://127.0.0.1:5174`, Spring Boot
+`http://localhost:8081`, Judge0 `http://localhost:2358`.
 
-```sh
-cp judge0.conf.example judge0.conf
-docker compose up -d
-```
+## Struktura
 
-Poczekaj na start usług, a następnie sprawdź API:
+| Katalog | Odpowiedzialność |
+| --- | --- |
+| backend | API wykonawcze, walidacja, adaptery językowe i interpretacja wyników |
+| frontend | Demonstrator edytora, Run i Submit |
+| infra | Compose, szablon konfiguracji i wymagany worker Judge0 |
+| docs | Kontrakt API, pomiary i instrukcje integracji |
+| examples | Przykładowe rozwiązania i żądania integracyjne |
+| scripts | Ręczne sprawdzenia integracji i obsługi języków |
 
-```sh
-curl -sS http://localhost:2358/system_info
-```
+## Integracja
 
-## Test wykonania C++
+Główny backend przekazuje zaufane testy, limity i kod do `/internal/v1/runs`
+lub `/internal/v1/evaluations`. Klucz API pozostaje wyłącznie między serwerami.
+Moduł nie przechowuje zadań, lobby ani rankingów. Judge0 korzysta z własnego
+technicznego Redis/Postgres.
 
-```sh
-curl -sS -X POST 'http://localhost:2358/submissions?wait=true' \
-  -H 'Content-Type: application/json' \
-  -d '{"source_code":"#include <iostream>\nint main(){std::cout << \"Judge0 OK\\n\";}","language_id":54,"stdin":""}'
-```
+- [Przekazanie backendowi](docs/backend-handoff.md)
+- [Kontrakt API](docs/integration-contract.md)
+- [OpenAPI 3.1](docs/openapi.json) i [walidacja](docs/openapi-guide.md)
+- [Obsługa języków](docs/languages.md)
+- [Wykonywanie funkcji](docs/function-evaluation.md)
 
-Oczekiwany poprawny wynik zawiera status `Accepted` i `stdout` z tekstem `Judge0 OK`.
+Submit sprawdza poprawność i dopiero dla poprawnego rozwiązania uruchamia
+2 rozgrzewki oraz 5 pomiarów. Wynik zawiera medianę czasu CPU i szczyt pamięci.
+Kompilacja odbywa się raz na Submit i nie wchodzi do pomiaru wykonania.
+FULL_PROGRAM uruchamia testy w osobnych procesach; FUNCTION przekazuje cały
+zestaw wejść do jednego procesu na rundę. Stan globalny może utrzymywać się
+między testami w rundzie. Dane testów ukrytych nie trafiają do odpowiedzi
+przeglądarki; program w trybie FUNCTION otrzymuje wejścia całego zestawu.
 
-Jeżeli pojawi się `Internal Error`, zbierz logi workera:
+## Stan przekazania
 
-```sh
-docker compose logs --tail=100 workers
-```
+Backend ma osobny kontrakt integracyjny. Frontend ma komponent konfigurowany przez stronę i osobny demonstrator
+jednego zadania. Instrukcja: [integracja frontendu](docs/frontend-handoff.md).
+API udostępnia pamięciową kolejkę Submit i zachowuje endpoint synchroniczny;
+worker wymaga COUNT=1. [Kontrakt kolejki](docs/async-submissions.md). Uruchomienie z czystej kopii na
+innym komputerze i obsługa wielu uczestników wymagają dalszej weryfikacji.
 
-Warto też zapisać architekturę i wersję cgroups widzianą przez Dockera:
-
-```sh
-docker info --format 'OS={{.OperatingSystem}} Arch={{.Architecture}} Cgroup={{.CgroupVersion}}'
-```
-
-## Zatrzymanie
-
-```sh
-docker compose down
-```
-
-Nie dodawaj `-v`, jeśli chcesz zachować lokalny wolumen bazy danych.
-
-## Kontekst
-
-Na naszym Macu z Apple Silicon API Judge0 uruchamiało się, ale wykonanie kodu kończyło się `Internal Error`. Log workera wskazywał błąd utworzenia grupy kontrolnej Isolate w `/sys/fs/cgroup/memory/box-.../`. Ten projekt pozwala sprawdzić, czy błąd powtarza się na innej konfiguracji Docker Desktop.
-
-To lokalny PoC do diagnostyki. Nie wystawiaj portu `2358` do Internetu i nie używaj go do przetwarzania prawdziwego kodu studentów.
+Wariant Apple Silicon używa nieoficjalnego obrazu przypiętego digestem oraz
+naszej poprawki workera. Zwykły, niezmodyfikowany Judge0 nie obsługuje naszego
+protokołu Submit. Konfiguracja służy lokalnej integracji i prezentacji.
