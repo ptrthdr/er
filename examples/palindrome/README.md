@@ -1,5 +1,8 @@
 # Palindrom — porównanie rozwiązań
 
+> **WYŁĄCZNIE PRZYKŁAD / DEMONSTRATOR.** Nie jest docelową częścią aplikacji CodeLobby.
+
+
 Zadanie: długość najdłuższego **spójnego** palindromu, nie podciągu.
 Implementuj `int longestPalindrome(const string& text)` bez `main()`.
 Run przyjmuje jeden wiersz małych liter a–z (również pusty).
