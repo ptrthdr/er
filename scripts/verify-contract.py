@@ -1,3 +1,4 @@
+from runner_contract import request_v1
 """Validate OpenAPI and live API samples. Install scripts/contract-requirements.txt first."""
 import copy,json,os,time,uuid,urllib.request,urllib.error,concurrent.futures
 from pathlib import Path
@@ -14,7 +15,7 @@ base=os.environ.get('CODELOBBY_API_URL','http://127.0.0.1:8081');key=os.environ[
 def call(path,body=None,auth=True):
     h={'Content-Type':'application/json'}
     if auth:h['X-CodeLobby-Internal-Key']=key
-    req=urllib.request.Request(base+path,data=None if body is None else json.dumps(body).encode(),headers=h)
+    req=urllib.request.Request(base+path,data=None if body is None else json.dumps(request_v1(body)).encode(),headers=h)
     try:
         with urllib.request.urlopen(req,timeout=120) as r:return r.status,json.load(r)
     except urllib.error.HTTPError as e:return e.code,json.load(e)
@@ -24,7 +25,7 @@ code,error=call('/internal/v1/capabilities',auth=False);assert code==401;schema(
 print('PASS authentication schema',flush=True)
 p=copy.deepcopy(example);p['submissionId']='contract-'+uuid.uuid4().hex
 for name,change in [('adapter',{'adapterId':'unknown'}),('limits',{'limits':{'cpuTimeMs':99999,'wallTimeMs':99999,'memoryLimitBytes':128000000}}),('input',{'testCases':[{'input':'123','expectedOutput':'0','visibility':'HIDDEN'}]}),('output',{'testCases':[{'input':'a','expectedOutput':'x','visibility':'HIDDEN'}]})]:
-    body={**p,**change};code,error=call('/internal/v1/evaluation-jobs',body)
+    validation=json.loads((root/'examples/integration/vowel-evaluation.json').read_text());body={**validation,**change,'submissionId':p['submissionId']};code,error=call('/internal/v1/evaluation-jobs',body)
     assert code==400,(name,code,error);schema('Error',error)
     assert call('/internal/v1/evaluation-jobs/'+p['submissionId'])[0]==404
     print('PASS pre-admission validation '+name,flush=True)
@@ -45,9 +46,9 @@ for _ in range(400):
     time.sleep(.3)
 assert job['state']=='FINISHED' and job['result']['status']=='ACCEPTED',job
 schema('SubmissionResult',job['result']);print('PASS finished job/result/benchmark/test schemas',flush=True)
-code,replay=call('/internal/v1/evaluation-jobs',p);assert code==202 and replay==job
+code,replay=call('/internal/v1/evaluation-jobs',p);assert code==200 and replay==job
 print('PASS completed job replay',flush=True)
-code,error=call('/internal/v1/evaluation-jobs',{**p,'sourceCode':p['sourceCode']+'\n// changed'})
+code,error=call('/internal/v1/evaluation-jobs',{**p,'sourceFiles':[{**p['sourceFiles'][0],'content':p['sourceFiles'][0]['content']+'\n// changed'}]})
 assert code==409;schema('Error',error);assert not error['retryable']
 print('PASS conflict error schema',flush=True)
 print('ALL CHECKS PASSED',flush=True)

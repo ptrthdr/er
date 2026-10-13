@@ -1,0 +1,33 @@
+{
+  "submissionId": "sub-123",
+  "taskVersionId": "double-v1",
+  "language": "JAVA",
+  "mode": "FULL_PROGRAM",
+  "sourceFiles": [
+    {
+      "path": "Main.java",
+      "content": "public class Main {public static void main(String[] a){System.out.println(Calc.twice(new java.util.Scanner(System.in).nextInt()));}}"
+    },
+    {
+      "path": "Calc.java",
+      "content": "class Calc {static int twice(int n){return n*2;}}"
+    }
+  ],
+  "limits": {
+    "cpuTimeMs": 2000,
+    "wallTimeMs": 5000,
+    "memoryLimitBytes": 128000000
+  },
+  "testCases": [
+    {
+      "input": "5\n",
+      "expectedOutput": "10\n",
+      "visibility": "PUBLIC"
+    },
+    {
+      "input": "-2\n",
+      "expectedOutput": "-4\n",
+      "visibility": "HIDDEN"
+    }
+  ]
+}

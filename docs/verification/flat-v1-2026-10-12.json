@@ -1,0 +1,240 @@
+{
+  "contract": "flat sourceFiles + taskVersionId v1",
+  "date": "2026-10-12",
+  "junit": [
+    {
+      "name": "pl.codelobby.execution.api.HttpBodyLimitFilterTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "pl.codelobby.execution.service.SubmissionJobsTest",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "pl.codelobby.execution.service.CppAdaptersTest",
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "pl.codelobby.execution.api.InternalApiIntegrationTest",
+      "tests": 12,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "pl.codelobby.execution.api.InternalApiKeyFilterTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "pl.codelobby.execution.judge0.Judge0ClientTest",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "pl.codelobby.execution.service.ExecutionServiceTest",
+      "tests": 15,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "pl.codelobby.execution.service.MedianTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "pl.codelobby.execution.service.SourceBundleTest",
+      "tests": 15,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ],
+  "live": [
+    {
+      "script": "verify-source-files.py",
+      "exitCode": 0
+    },
+    {
+      "script": "verify-integration.py",
+      "exitCode": 0
+    },
+    {
+      "script": "verify-languages.py",
+      "exitCode": 0
+    },
+    {
+      "script": "verify-async.py",
+      "exitCode": 0
+    },
+    {
+      "script": "verify-contract.py",
+      "exitCode": 0
+    }
+  ],
+  "multiFile": {
+    "passed": 39,
+    "checks": [
+      "flat capabilities and actual runtime names",
+      "JAVA multi-file Run",
+      "new job QUEUED",
+      "JAVA multi-file Submit + benchmark",
+      "JAVA hidden fields redacted",
+      "JAVA reordered files replay",
+      "JAVA version conflict",
+      "PYTHON multi-file Run",
+      "new job QUEUED",
+      "PYTHON multi-file Submit + benchmark",
+      "PYTHON hidden fields redacted",
+      "PYTHON reordered files replay",
+      "PYTHON version conflict",
+      "CPP multi-file Run",
+      "new job QUEUED",
+      "CPP multi-file Submit + benchmark",
+      "CPP hidden fields redacted",
+      "CPP reordered files replay",
+      "CPP version conflict",
+      "all Java files compiled",
+      "reject path ../main.py",
+      "reject path src/main.py",
+      "reject path /main.py",
+      "reject path main\\.py",
+      "reject path compile.sh",
+      "case-insensitive collision",
+      "new job QUEUED",
+      "fresh writable filesystem between tests/benchmark",
+      "stdout output limit verdict",
+      "stderr output limit verdict",
+      "new job QUEUED",
+      "truncated output never Accepted",
+      "outbound connection blocked",
+      "scratch file >64KiB remains usable",
+      "service keys/config not exposed in sandbox",
+      "raw body limit /runs",
+      "raw body limit /evaluation-jobs",
+      "chunked body limit",
+      "input limit counts UTF8 bytes"
+    ]
+  },
+  "integration": {
+    "checks": [
+      {
+        "name": "capabilities",
+        "passed": true,
+        "seconds": 0.014
+      },
+      {
+        "name": "unauthenticated request rejected",
+        "passed": true,
+        "seconds": 0.001
+      },
+      {
+        "name": "vowel Submit and hidden redaction",
+        "passed": true,
+        "seconds": 3.117
+      },
+      {
+        "name": "palindrome Submit",
+        "passed": true,
+        "seconds": 3.114
+      },
+      {
+        "name": "vowel Run",
+        "passed": true,
+        "seconds": 3.128
+      },
+      {
+        "name": "palindrome Run",
+        "passed": true,
+        "seconds": 3.138
+      },
+      {
+        "name": "FULL_PROGRAM Submit",
+        "passed": true,
+        "seconds": 8.258
+      },
+      {
+        "name": "FULL_PROGRAM Run",
+        "passed": true,
+        "seconds": 2.09
+      },
+      {
+        "name": "unknown adapter",
+        "passed": true,
+        "seconds": 0.006
+      },
+      {
+        "name": "invalid function input",
+        "passed": true,
+        "seconds": 0.004
+      },
+      {
+        "name": "invalid limits",
+        "passed": true,
+        "seconds": 0.002
+      },
+      {
+        "name": "empty tests",
+        "passed": true,
+        "seconds": 0.014
+      },
+      {
+        "name": "wrong answer",
+        "passed": true,
+        "seconds": 3.111
+      },
+      {
+        "name": "compilation error",
+        "passed": true,
+        "seconds": 2.091
+      },
+      {
+        "name": "runtime error",
+        "passed": true,
+        "seconds": 3.155
+      },
+      {
+        "name": "time limit",
+        "passed": true,
+        "seconds": 5.191
+      },
+      {
+        "name": "memory limit",
+        "passed": true,
+        "seconds": 3.136
+      }
+    ],
+    "passed": 17,
+    "total": 17
+  },
+  "languagesChecks": 8,
+  "queueChecks": 12,
+  "openapiOffline": "passed",
+  "openapiLive": "passed",
+  "editorLibraryBuild": "passed",
+  "ci": "workflow prepared locally; not run on GitHub",
+  "mainBackend": "not available in this workspace; real integration not tested",
+  "standardPortSmoke": {
+    "port": 8081,
+    "capabilities": "passed",
+    "multiFileJavaRun": "accepted",
+    "testPort8082": "stopped"
+  },
+  "preparedCoreMavenVerify": "passed: 80 tests"
+}

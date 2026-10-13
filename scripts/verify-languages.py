@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from runner_contract import request_v1
 """Real sandbox checks for Python/Java adapters and full programs."""
 import json
 import os
@@ -30,7 +31,7 @@ for language, (function, full) in sources.items():
                 payload.update(submissionId="language-check", testCases=[{
                     "input": input_text, "expectedOutput": output, "visibility": "HIDDEN"}])
             request = urllib.request.Request(base + "/internal/v1/" + action,
-                                             data=json.dumps(payload).encode(), headers={
+                                             data=json.dumps(request_v1(payload)).encode(), headers={
                                                  "Content-Type": "application/json", "X-CodeLobby-Internal-Key": key})
             with urllib.request.urlopen(request, timeout=150) as response:
                 result = json.load(response)["result"]

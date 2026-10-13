@@ -1,0 +1,31 @@
+server:
+  port: ${SERVER_PORT:8081}
+
+codelobby:
+  demo:
+    enabled: ${CODELOBBY_DEMO_ENABLED:false}
+  internal:
+    api-key: ${CODELOBBY_INTERNAL_API_KEY:}
+  execution:
+    engine: ${EXECUTION_ENGINE:judge0}
+  piston:
+    base-url: ${PISTON_BASE_URL:http://localhost:2000}
+    cpp-version: ${PISTON_CPP_VERSION:10.2.0}
+    compile-timeout-ms: 10000
+    run-timeout-ms: 3000
+    compile-memory-limit-bytes: 268435456
+    run-memory-limit-bytes: 67108864
+  judge0:
+    base-url: ${JUDGE0_BASE_URL:http://localhost:2358}
+    language-id: 54
+    cpu-time-limit-seconds: 2
+    wall-time-limit-seconds: 5
+    memory-limit-kilobytes: 128000
+    stack-limit-kilobytes: 64000
+    max-processes-and-threads: 20
+
+# Reject unsupported fields (including files) instead of silently ignoring them.
+spring:
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true

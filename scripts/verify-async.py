@@ -1,3 +1,4 @@
+from runner_contract import request_v1
 """Real local sandbox checks for the asynchronous evaluation API."""
 import os,json,time,urllib.request,urllib.error,copy,uuid
 base=os.environ.get('CODELOBBY_API_URL','http://127.0.0.1:8081')
@@ -7,7 +8,7 @@ checks=0
 def call(path,body=None,auth=True):
     headers={'Content-Type':'application/json'}
     if auth: headers['X-CodeLobby-Internal-Key']=key
-    request=urllib.request.Request(base+path,data=None if body is None else json.dumps(body).encode(),headers=headers)
+    request=urllib.request.Request(base+path,data=None if body is None else json.dumps(request_v1(body)).encode(),headers=headers)
     try:
         with urllib.request.urlopen(request,timeout=10) as r:return r.status,json.load(r)
     except urllib.error.HTTPError as e:return e.code,e.read().decode()
@@ -33,7 +34,7 @@ check('unknown id',call('/internal/v1/evaluation-jobs/missing')[0]==404)
 start=time.monotonic();code,job=call('/internal/v1/evaluation-jobs',payload)
 check('202 fast acceptance',code==202 and time.monotonic()-start<2)
 code,repeat=call('/internal/v1/evaluation-jobs',payload)
-check('deduplication',code==202 and repeat['createdAt']==job['createdAt'])
+check('deduplication',code in [200,202] and repeat['createdAt']==job['createdAt'])
 changed={**payload,'sourceCode':'int countVowels(const string& s){return 1;}'}
 check('conflicting id',call('/internal/v1/evaluation-jobs',changed)[0]==409)
 result,seen=wait(job)

@@ -2,6 +2,7 @@ require "rubygems/version"
 require "json"
 require "fileutils"
 require "tmpdir"
+require "shellwords"
 
 class IsolateJob < ApplicationJob
   retry_on RuntimeError, wait: 0.1.seconds, attempts: 100
@@ -21,6 +22,7 @@ class IsolateJob < ApplicationJob
     true
   end
 
+  OUTPUT_LIMIT_BYTES = 65_536
   STDIN_FILE_NAME = "stdin.txt"
   STDOUT_FILE_NAME = "stdout.txt"
   STDERR_FILE_NAME = "stderr.txt"
@@ -106,6 +108,7 @@ class IsolateJob < ApplicationJob
     payload = JSON.parse(stdin.delete_prefix(SUITE_REQUEST_PREFIX))
     inputs = payload["inputs"]
     @suite_expected = payload["expectedOutputs"]
+    @suite_benchmark_enabled = payload.fetch("benchmark", true)
     unless inputs.is_a?(Array) && inputs.length.between?(1, 50) &&
            inputs.all? { |input| input.is_a?(String) && input.bytesize <= 400_000 }
       raise "Invalid CodeLobby test suite input."
@@ -144,8 +147,8 @@ class IsolateJob < ApplicationJob
       verify
       # This Judge0 model memoizes decoded stdout/stderr on first read. Read
       # each case's actual files instead of its cached Submission getters.
-      case_stdout = File.read(stdout_file)
-      case_stderr = File.read(stderr_file)
+      case_stdout = bounded_text(stdout_file)
+      case_stderr = bounded_text(stderr_file)
       {
         status: submission.status.name,
         stdout: case_stdout.empty? ? nil : case_stdout,
@@ -157,11 +160,11 @@ class IsolateJob < ApplicationJob
     end
 
     benchmark = nil
-    if results.each_with_index.all? { |result, index|
-         result[:status] == Status.ac.name && result[:message] != "Memory limit exceeded" && normalize_suite_output(result[:stdout]) == normalize_suite_output(@suite_expected[index]) }
+    if @suite_benchmark_enabled && results.each_with_index.all? { |result, index|
+         result[:status] == Status.ac.name && !result[:message].to_s.start_with?("Memory limit exceeded", "Output limit exceeded") && normalize_suite_output(result[:stdout]) == normalize_suite_output(@suite_expected[index]) }
       samples = []
       memories = []
-      benchmark = { status: "COMPLETED", warmupRuns: 2, measuredRuns: 0 }
+      benchmark = { status: "COMPLETED", warmupRuns: 2, measuredRuns: 0, measurementScope: "SUITE_SUM_OF_PROCESSES", measurementTrust: "SANDBOX" }
       if @batch_case_count
         benchmark[:measurementScope] = "FUNCTION_CALLS_ELAPSED"
         benchmark[:measurementTrust] = "IN_PROCESS_UNTRUSTED"
@@ -183,7 +186,7 @@ class IsolateJob < ApplicationJob
           File.binwrite(stdin_file, @batch_case_count ? "CODELOBBY_BENCH_V1\n" + input : input)
           run
           verify
-          unless submission.status == Status.ac && submission.message != "Memory limit exceeded" &&
+          unless submission.status == Status.ac && !submission.message.to_s.start_with?("Memory limit exceeded", "Output limit exceeded") &&
                  normalize_suite_output(File.read(stdout_file)) == normalize_suite_output(@suite_expected[index])
             valid = false
             break
@@ -274,7 +277,7 @@ class IsolateJob < ApplicationJob
     @workdir = `isolate #{cgroups} -b #{box_id} --init`.chomp
     @boxdir = workdir + "/box"
     @tmpdir = workdir + "/tmp"
-    @source_file = boxdir + "/" + submission.language.source_file.to_s
+    @source_file = boxdir + "/" + (submission.language_id == 71 ? "main.py" : submission.language.source_file.to_s)
     @stdin_file = boxdir + "/" + STDIN_FILE_NAME
     @stdout_file = workdir + "/" + STDOUT_FILE_NAME
     @stderr_file = workdir + "/" + STDERR_FILE_NAME
@@ -356,6 +359,15 @@ class IsolateJob < ApplicationJob
       # gsub can be skipped if compile script is used, but is kept for additional security.
       compiler_options = submission.compiler_options.to_s.strip.encode("UTF-8", invalid: :replace).gsub(/[$&;<>|`]/, "")
       compile_command = submission.language.compile_cmd % compiler_options
+      if submission.language_id == 54
+        cpp_sources = Dir.children(boxdir).grep(/\A[A-Za-z_][A-Za-z0-9_]*\.cpp\z/).sort
+        compile_command = (submission.language.compile_cmd % "-std=c++17 -O2").sub(/main\.cpp/, Shellwords.join(cpp_sources))
+      end
+      if submission.language_id == 62
+        # Server validated flat source paths; do not discover class entrypoints or accept build scripts.
+        java_sources = Dir.children(boxdir).grep(/\A[A-Za-z_][A-Za-z0-9_]*\.java\z/).sort
+        compile_command = (submission.language.compile_cmd % "").sub(/Main\.java/, Shellwords.join(java_sources))
+      end
       if submission.language_id == 62
         compile_command = compile_command.sub("/javac ", "/javac -J-Xmx64m -J-XX:+UseSerialGC -J-XX:ActiveProcessorCount=1 -J-XX:CompressedClassSpaceSize=16m -J-XX:ReservedCodeCacheSize=16m ")
       end
@@ -397,7 +409,7 @@ class IsolateJob < ApplicationJob
     `#{command}`
     process_status = $?
 
-    compile_output = File.read(compile_output_file)
+    compile_output = bounded_text(compile_output_file)
     compile_output = nil if compile_output.empty?
     submission.compile_output = compile_output
 
@@ -484,6 +496,7 @@ class IsolateJob < ApplicationJob
       # gsub is mandatory!
       command_line_arguments = submission.command_line_arguments.to_s.strip.encode("UTF-8", invalid: :replace).gsub(/[$&;<>|`]/, "")
       run_command = submission.language.run_cmd
+      run_command = run_command.sub(/script\.py/, "main.py") if submission.language_id == 71
       if submission.language_id == 62
         # Heap is a subset of the enforced process/cgroup memory budget.
         heap_mb = [16, [64, (submission.memory_limit.to_i / 1000) / 2].min].max
@@ -513,16 +526,56 @@ class IsolateJob < ApplicationJob
     -d /etc:noexec \
     --run \
     -- /bin/bash $(basename #{run_script}) \
-    > #{stdout_file} 2> #{stderr_file} \
     "
 
     puts "[#{DateTime.now}] Running submission #{submission.token} (#{submission.id}):"
     puts command.gsub(/\s+/, " ")
     puts
 
-    `#{command}`
+    capture_program_output(command)
 
     `sudo rm #{run_script}` unless submission.is_project
+  end
+
+  # Independent stdout/stderr guards. Closing an overflowing pipe prevents further
+  # storage; a program ignoring EPIPE is still bounded by Isolate CPU/wall limits.
+  # This does not lower the file-size allowance for the student's temporary files.
+  def capture_program_output(command)
+    @output_exceeded = false
+    out_reader, out_writer = IO.pipe
+    err_reader, err_writer = IO.pipe
+    readers = []
+    pid = Process.spawn(command, out: out_writer, err: err_writer)
+    out_writer.close
+    err_writer.close
+    [[out_reader, stdout_file], [err_reader, stderr_file]].each do |reader, path|
+      readers << Thread.new do
+        begin
+          written = 0
+          File.open(path, "wb") do |file|
+            loop do
+              chunk = reader.readpartial(4096)
+              remaining = OUTPUT_LIMIT_BYTES - written
+              file.write(chunk.byteslice(0, remaining)) if remaining > 0
+              written += [chunk.bytesize, remaining].min
+              if chunk.bytesize > remaining
+                @output_exceeded = true
+                break
+              end
+            end
+          end
+        rescue EOFError, IOError
+          # EOF (or close while cleaning up) ends the bounded stream.
+        ensure
+          reader.close unless reader.closed?
+        end
+      end
+    end
+    Process.wait(pid)
+    readers.each { |thread| thread.join(2) }
+  ensure
+    [out_reader, out_writer, err_reader, err_writer].compact.each { |io| io.close unless io.closed? }
+    readers.each(&:join) if readers
   end
 
   def verify
@@ -530,10 +583,10 @@ class IsolateJob < ApplicationJob
 
     metadata = get_metadata
 
-    program_stdout = File.read(stdout_file)
+    program_stdout = bounded_text(stdout_file)
     program_stdout = nil if program_stdout.empty?
 
-    program_stderr = File.read(stderr_file)
+    program_stderr = bounded_text(stderr_file)
     program_stderr = nil if program_stderr.empty?
 
     submission.time = metadata[:time]
@@ -546,6 +599,10 @@ class IsolateJob < ApplicationJob
     submission.message = metadata[:message]
     submission.status = determine_status(metadata[:status], submission.exit_signal)
     submission.message = "Memory limit exceeded" if metadata.key?(:"cg-oom-killed")
+    if @output_exceeded
+      submission.status = Status.nzec
+      submission.message = "Output limit exceeded"
+    end
 
     # After adding support for compiler_options and command_line_arguments
     # status "Exec Format Error" will no longer occur because compile and run
@@ -564,6 +621,10 @@ class IsolateJob < ApplicationJob
        )
        submission.status = Status.exeerr
     end
+  end
+
+  def bounded_text(path)
+    (File.binread(path, OUTPUT_LIMIT_BYTES) || "").force_encoding("UTF-8").scrub.byteslice(0, OUTPUT_LIMIT_BYTES).force_encoding("UTF-8").scrub("")
   end
 
   def cleanup(raise_exception = true)

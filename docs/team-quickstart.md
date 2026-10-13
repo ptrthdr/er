@@ -33,26 +33,35 @@ macOS/Linux, w głównym katalogu:
 set -a
 . ./.env.local
 set +a
-cd backend
-CODELOBBY_DEMO_ENABLED=true mvn spring-boot:run
+cd runner
+mvn spring-boot:run
 ```
 
 PowerShell, w głównym katalogu:
 
 ```powershell
 $env:CODELOBBY_INTERNAL_API_KEY = ((Get-Content .env.local | Where-Object { $_ -like 'CODELOBBY_INTERNAL_API_KEY=*' }) -split '=', 2)[1]
-$env:CODELOBBY_DEMO_ENABLED = 'true'
 Set-Location backend
 mvn spring-boot:run
 ```
 
-Demo włączamy do prezentacji. Backend głównego projektu potrzebuje tylko
-/internal/v1; demonstracyjne /api mogą być wyłączone.
+Domyślna aplikacja zawiera wyłącznie API integracyjne. W pełnym repo modułu
+opcjonalną stronę demo uruchom przez `CODELOBBY_DEMO_ENABLED=true mvn -Pdemo spring-boot:run`.
+Paczka do głównego repo nie zawiera źródeł demo i nie używa tego profilu.
 
-## Frontend — kolejny terminal
+## Biblioteka edytora do integracji
 
 ```sh
-cd frontend
+npm --prefix components/code-editor ci
+npm --prefix components/code-editor run build:library
+```
+
+Zaimportuj JS i CSS z components/code-editor/dist w głównej aplikacji.
+
+## Frontend demonstracyjny — tylko pełne repo modułu, kolejny terminal
+
+```sh
+cd examples/demo-frontend
 npm ci
 npm run dev
 ```

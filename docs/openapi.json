@@ -1,9 +1,9 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "CodeLobby Execution — trusted team API",
+    "title": "CodeLobby Execution \u2014 trusted team API",
     "version": "1.0.0",
-    "description": "Server-to-server API. Browser calls the main backend, never this API with its secret. Demo /api endpoints are intentionally outside the integration contract. Single process; one sandbox operation at a time, 10 queued jobs and 100 retained records. Queue payload/body validation precedes acceptance."
+    "description": "CodeLobby Runner v1: flat multi-file projects. SourceFiles/taskVersionId replace the local prototype. FUNCTION supports one allowlisted fragment."
   },
   "servers": [
     {
@@ -42,7 +42,7 @@
             }
           },
           "503": {
-            "description": "EXECUTION_ERROR / INTERNAL_API_DISABLED; synchronous sandbox waits <= 2 seconds; queued jobs wait interruptibly until free",
+            "description": "EXECUTION_UNAVAILABLE; synchronous sandbox waits <= 2 seconds; queued jobs wait interruptibly until free",
             "content": {
               "application/json": {
                 "schema": {
@@ -69,7 +69,7 @@
             }
           },
           "400": {
-            "description": "INVALID_REQUEST / INVALID_JSON / INVALID_EVALUATION; fix payload",
+            "description": "INVALID_REQUEST / INVALID_REQUEST / INVALID_REQUEST; fix payload",
             "content": {
               "application/json": {
                 "schema": {
@@ -89,7 +89,17 @@
             }
           },
           "503": {
-            "description": "EXECUTION_ERROR / INTERNAL_API_DISABLED; synchronous sandbox waits <= 2 seconds; queued jobs wait interruptibly until free",
+            "description": "EXECUTION_UNAVAILABLE; synchronous sandbox waits <= 2 seconds; queued jobs wait interruptibly until free",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Raw body exceeds 2000000 bytes, rejected before JSON parsing",
             "content": {
               "application/json": {
                 "schema": {
@@ -105,6 +115,28 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/RunRequest"
+              },
+              "example": {
+                "requestId": "run-123",
+                "taskVersionId": "double-v1",
+                "language": "JAVA",
+                "mode": "FULL_PROGRAM",
+                "sourceFiles": [
+                  {
+                    "path": "Main.java",
+                    "content": "public class Main {public static void main(String[] a){System.out.println(Calc.twice(new java.util.Scanner(System.in).nextInt()));}}"
+                  },
+                  {
+                    "path": "Calc.java",
+                    "content": "class Calc {static int twice(int n){return n*2;}}"
+                  }
+                ],
+                "limits": {
+                  "cpuTimeMs": 2000,
+                  "wallTimeMs": 5000,
+                  "memoryLimitBytes": 128000000
+                },
+                "stdin": "5\n"
               }
             }
           }
@@ -126,7 +158,7 @@
             }
           },
           "400": {
-            "description": "INVALID_REQUEST / INVALID_JSON / INVALID_EVALUATION; fix payload",
+            "description": "INVALID_REQUEST / INVALID_REQUEST / INVALID_REQUEST; fix payload",
             "content": {
               "application/json": {
                 "schema": {
@@ -146,7 +178,17 @@
             }
           },
           "503": {
-            "description": "EXECUTION_ERROR / INTERNAL_API_DISABLED; synchronous sandbox waits <= 2 seconds; queued jobs wait interruptibly until free",
+            "description": "EXECUTION_UNAVAILABLE; synchronous sandbox waits <= 2 seconds; queued jobs wait interruptibly until free",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Raw body exceeds 2000000 bytes, rejected before JSON parsing",
             "content": {
               "application/json": {
                 "schema": {
@@ -162,10 +204,44 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/EvaluationRequest"
+              },
+              "example": {
+                "submissionId": "sub-123",
+                "taskVersionId": "double-v1",
+                "language": "JAVA",
+                "mode": "FULL_PROGRAM",
+                "sourceFiles": [
+                  {
+                    "path": "Main.java",
+                    "content": "public class Main {public static void main(String[] a){System.out.println(Calc.twice(new java.util.Scanner(System.in).nextInt()));}}"
+                  },
+                  {
+                    "path": "Calc.java",
+                    "content": "class Calc {static int twice(int n){return n*2;}}"
+                  }
+                ],
+                "limits": {
+                  "cpuTimeMs": 2000,
+                  "wallTimeMs": 5000,
+                  "memoryLimitBytes": 128000000
+                },
+                "testCases": [
+                  {
+                    "input": "5\n",
+                    "expectedOutput": "10\n",
+                    "visibility": "PUBLIC"
+                  },
+                  {
+                    "input": "-2\n",
+                    "expectedOutput": "-4\n",
+                    "visibility": "HIDDEN"
+                  }
+                ]
               }
             }
           }
-        }
+        },
+        "deprecated": true
       }
     },
     "/internal/v1/evaluation-jobs": {
@@ -183,7 +259,7 @@
             }
           },
           "400": {
-            "description": "INVALID_REQUEST / INVALID_JSON / INVALID_EVALUATION; fix payload",
+            "description": "INVALID_REQUEST / INVALID_REQUEST / INVALID_REQUEST; fix payload",
             "content": {
               "application/json": {
                 "schema": {
@@ -213,7 +289,7 @@
             }
           },
           "413": {
-            "description": "PAYLOAD_TOO_LARGE; reduce suite",
+            "description": "Raw body exceeds 2000000 bytes, rejected before JSON parsing",
             "content": {
               "application/json": {
                 "schema": {
@@ -233,11 +309,21 @@
             }
           },
           "503": {
-            "description": "EXECUTION_ERROR / INTERNAL_API_DISABLED; synchronous sandbox waits <= 2 seconds; queued jobs wait interruptibly until free",
+            "description": "EXECUTION_UNAVAILABLE; synchronous sandbox waits <= 2 seconds; queued jobs wait interruptibly until free",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Replay of an existing FINISHED/FAILED job without execution",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
                 }
               }
             }
@@ -251,11 +337,20 @@
                 "$ref": "#/components/schemas/EvaluationRequest"
               },
               "example": {
-                "submissionId": "team-vowels-001",
-                "language": "CPP",
-                "mode": "FUNCTION",
-                "adapterId": "vowel-count-v1",
-                "sourceCode": "int countVowels(const string& text) { int count = 0; for (char c : text) if (c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u') ++count; return count; }",
+                "submissionId": "sub-123",
+                "taskVersionId": "double-v1",
+                "language": "JAVA",
+                "mode": "FULL_PROGRAM",
+                "sourceFiles": [
+                  {
+                    "path": "Main.java",
+                    "content": "public class Main {public static void main(String[] a){System.out.println(Calc.twice(new java.util.Scanner(System.in).nextInt()));}}"
+                  },
+                  {
+                    "path": "Calc.java",
+                    "content": "class Calc {static int twice(int n){return n*2;}}"
+                  }
+                ],
                 "limits": {
                   "cpuTimeMs": 2000,
                   "wallTimeMs": 5000,
@@ -263,18 +358,13 @@
                 },
                 "testCases": [
                   {
-                    "input": "codelobby\n",
-                    "expectedOutput": "3\n",
+                    "input": "5\n",
+                    "expectedOutput": "10\n",
                     "visibility": "PUBLIC"
                   },
                   {
-                    "input": "aeiou\n",
-                    "expectedOutput": "5\n",
-                    "visibility": "HIDDEN"
-                  },
-                  {
-                    "input": "\n",
-                    "expectedOutput": "0\n",
+                    "input": "-2\n",
+                    "expectedOutput": "-4\n",
                     "visibility": "HIDDEN"
                   }
                 ]
@@ -319,7 +409,7 @@
             }
           },
           "503": {
-            "description": "EXECUTION_ERROR / INTERNAL_API_DISABLED; synchronous sandbox waits <= 2 seconds; queued jobs wait interruptibly until free",
+            "description": "EXECUTION_UNAVAILABLE; synchronous sandbox waits <= 2 seconds; queued jobs wait interruptibly until free",
             "content": {
               "application/json": {
                 "schema": {
@@ -419,8 +509,24 @@
       },
       "EvaluationRequest": {
         "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "submissionId",
+          "taskVersionId",
+          "language",
+          "mode",
+          "sourceFiles",
+          "limits",
+          "testCases"
+        ],
         "properties": {
           "submissionId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+          },
+          "taskVersionId": {
             "type": "string",
             "minLength": 1,
             "maxLength": 128
@@ -428,34 +534,30 @@
           "language": {
             "$ref": "#/components/schemas/Language"
           },
-          "sourceCode": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 50000
-          },
-          "limits": {
-            "$ref": "#/components/schemas/Limits"
-          },
           "mode": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/Mode"
-              },
-              {
-                "type": "null"
-              }
+            "type": "string",
+            "enum": [
+              "FULL_PROGRAM",
+              "FUNCTION"
             ]
           },
           "adapterId": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 64
-              },
-              {
-                "type": "null"
-              }
-            ]
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 64
+          },
+          "sourceFiles": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 20,
+            "items": {
+              "$ref": "#/components/schemas/SourceFile"
+            }
+          },
+          "limits": {
+            "$ref": "#/components/schemas/Limits"
           },
           "testCases": {
             "type": "array",
@@ -466,19 +568,233 @@
             }
           }
         },
-        "required": [
-          "submissionId",
-          "language",
-          "sourceCode",
-          "limits",
-          "testCases"
-        ],
-        "description": "IDs/code must contain non-whitespace. FUNCTION requires a registered adapterId and valid adapter inputs/outputs. FULL_PROGRAM forbids adapterId. Async serialized payload <= 2000000 bytes. Trusted main backend enforces ownership and lobby language policy."
+        "description": "Raw body <=2000000 bytes. FUNCTION: exactly one source file and adapterId required. FULL_PROGRAM: adapterId absent/null; fixed entry filenames.",
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "mode": {
+                  "const": "FUNCTION"
+                }
+              },
+              "required": [
+                "mode"
+              ]
+            },
+            "then": {
+              "required": [
+                "adapterId"
+              ],
+              "properties": {
+                "adapterId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "sourceFiles": {
+                  "maxItems": 1
+                }
+              }
+            },
+            "else": {
+              "properties": {
+                "adapterId": {
+                  "type": "null"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "language": {
+                  "const": "JAVA"
+                }
+              },
+              "required": [
+                "language"
+              ]
+            },
+            "then": {
+              "properties": {
+                "sourceFiles": {
+                  "items": {
+                    "properties": {
+                      "path": {
+                        "pattern": "^[A-Za-z_][A-Za-z0-9_]*\\.java$"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "language": {
+                  "const": "JAVA"
+                },
+                "mode": {
+                  "const": "FULL_PROGRAM"
+                }
+              },
+              "required": [
+                "language",
+                "mode"
+              ]
+            },
+            "then": {
+              "properties": {
+                "sourceFiles": {
+                  "contains": {
+                    "properties": {
+                      "path": {
+                        "const": "Main.java"
+                      }
+                    },
+                    "required": [
+                      "path"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "language": {
+                  "const": "PYTHON"
+                }
+              },
+              "required": [
+                "language"
+              ]
+            },
+            "then": {
+              "properties": {
+                "sourceFiles": {
+                  "items": {
+                    "properties": {
+                      "path": {
+                        "pattern": "^[A-Za-z_][A-Za-z0-9_]*\\.py$"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "language": {
+                  "const": "PYTHON"
+                },
+                "mode": {
+                  "const": "FULL_PROGRAM"
+                }
+              },
+              "required": [
+                "language",
+                "mode"
+              ]
+            },
+            "then": {
+              "properties": {
+                "sourceFiles": {
+                  "contains": {
+                    "properties": {
+                      "path": {
+                        "const": "main.py"
+                      }
+                    },
+                    "required": [
+                      "path"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "language": {
+                  "const": "CPP"
+                }
+              },
+              "required": [
+                "language"
+              ]
+            },
+            "then": {
+              "properties": {
+                "sourceFiles": {
+                  "items": {
+                    "properties": {
+                      "path": {
+                        "pattern": "^[A-Za-z_][A-Za-z0-9_]*\\.(cpp|h|hpp)$"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "language": {
+                  "const": "CPP"
+                },
+                "mode": {
+                  "const": "FULL_PROGRAM"
+                }
+              },
+              "required": [
+                "language",
+                "mode"
+              ]
+            },
+            "then": {
+              "properties": {
+                "sourceFiles": {
+                  "contains": {
+                    "properties": {
+                      "path": {
+                        "const": "main.cpp"
+                      }
+                    },
+                    "required": [
+                      "path"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        ]
       },
       "RunRequest": {
         "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "requestId",
+          "taskVersionId",
+          "language",
+          "mode",
+          "sourceFiles",
+          "limits",
+          "stdin"
+        ],
         "properties": {
           "requestId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "taskVersionId": {
             "type": "string",
             "minLength": 1,
             "maxLength": 128
@@ -486,46 +802,242 @@
           "language": {
             "$ref": "#/components/schemas/Language"
           },
-          "sourceCode": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 50000
-          },
-          "limits": {
-            "$ref": "#/components/schemas/Limits"
-          },
           "mode": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/Mode"
-              },
-              {
-                "type": "null"
-              }
+            "type": "string",
+            "enum": [
+              "FULL_PROGRAM",
+              "FUNCTION"
             ]
           },
           "adapterId": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 64
-              },
-              {
-                "type": "null"
-              }
-            ]
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 64
+          },
+          "sourceFiles": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 20,
+            "items": {
+              "$ref": "#/components/schemas/SourceFile"
+            }
+          },
+          "limits": {
+            "$ref": "#/components/schemas/Limits"
           },
           "stdin": {
             "type": "string",
             "maxLength": 100000
           }
         },
-        "required": [
-          "requestId",
-          "language",
-          "sourceCode",
-          "limits",
-          "stdin"
+        "description": "Raw body <=2000000 bytes. FUNCTION: exactly one source file and adapterId required. FULL_PROGRAM: adapterId absent/null; fixed entry filenames.",
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "mode": {
+                  "const": "FUNCTION"
+                }
+              },
+              "required": [
+                "mode"
+              ]
+            },
+            "then": {
+              "required": [
+                "adapterId"
+              ],
+              "properties": {
+                "adapterId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "sourceFiles": {
+                  "maxItems": 1
+                }
+              }
+            },
+            "else": {
+              "properties": {
+                "adapterId": {
+                  "type": "null"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "language": {
+                  "const": "JAVA"
+                }
+              },
+              "required": [
+                "language"
+              ]
+            },
+            "then": {
+              "properties": {
+                "sourceFiles": {
+                  "items": {
+                    "properties": {
+                      "path": {
+                        "pattern": "^[A-Za-z_][A-Za-z0-9_]*\\.java$"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "language": {
+                  "const": "JAVA"
+                },
+                "mode": {
+                  "const": "FULL_PROGRAM"
+                }
+              },
+              "required": [
+                "language",
+                "mode"
+              ]
+            },
+            "then": {
+              "properties": {
+                "sourceFiles": {
+                  "contains": {
+                    "properties": {
+                      "path": {
+                        "const": "Main.java"
+                      }
+                    },
+                    "required": [
+                      "path"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "language": {
+                  "const": "PYTHON"
+                }
+              },
+              "required": [
+                "language"
+              ]
+            },
+            "then": {
+              "properties": {
+                "sourceFiles": {
+                  "items": {
+                    "properties": {
+                      "path": {
+                        "pattern": "^[A-Za-z_][A-Za-z0-9_]*\\.py$"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "language": {
+                  "const": "PYTHON"
+                },
+                "mode": {
+                  "const": "FULL_PROGRAM"
+                }
+              },
+              "required": [
+                "language",
+                "mode"
+              ]
+            },
+            "then": {
+              "properties": {
+                "sourceFiles": {
+                  "contains": {
+                    "properties": {
+                      "path": {
+                        "const": "main.py"
+                      }
+                    },
+                    "required": [
+                      "path"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "language": {
+                  "const": "CPP"
+                }
+              },
+              "required": [
+                "language"
+              ]
+            },
+            "then": {
+              "properties": {
+                "sourceFiles": {
+                  "items": {
+                    "properties": {
+                      "path": {
+                        "pattern": "^[A-Za-z_][A-Za-z0-9_]*\\.(cpp|h|hpp)$"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "language": {
+                  "const": "CPP"
+                },
+                "mode": {
+                  "const": "FULL_PROGRAM"
+                }
+              },
+              "required": [
+                "language",
+                "mode"
+              ]
+            },
+            "then": {
+              "properties": {
+                "sourceFiles": {
+                  "contains": {
+                    "properties": {
+                      "path": {
+                        "const": "main.cpp"
+                      }
+                    },
+                    "required": [
+                      "path"
+                    ]
+                  }
+                }
+              }
+            }
+          }
         ]
       },
       "Verdict": {
@@ -538,7 +1050,8 @@
           "RUNTIME_ERROR",
           "TIME_LIMIT_EXCEEDED",
           "MEMORY_LIMIT_EXCEEDED",
-          "EXECUTION_ERROR"
+          "EXECUTION_ERROR",
+          "OUTPUT_LIMIT_EXCEEDED"
         ]
       },
       "ExecutionResult": {
@@ -678,7 +1191,7 @@
             "type": "string",
             "enum": [
               "FUNCTION_CALLS_ELAPSED",
-              "SUITE_PROCESS_CPU"
+              "SUITE_SUM_OF_PROCESSES"
             ]
           },
           "measurementTrust": {
@@ -936,7 +1449,7 @@
           "error": {
             "anyOf": [
               {
-                "type": "string"
+                "$ref": "#/components/schemas/Error"
               },
               {
                 "type": "null"
@@ -953,9 +1466,25 @@
       },
       "Error": {
         "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "message",
+          "retryable"
+        ],
         "properties": {
-          "error": {
-            "type": "string"
+          "code": {
+            "type": "string",
+            "enum": [
+              "INVALID_REQUEST",
+              "INVALID_SOURCE_FILES",
+              "UNAUTHORIZED",
+              "JOB_NOT_FOUND",
+              "SUBMISSION_ID_CONFLICT",
+              "PAYLOAD_TOO_LARGE",
+              "QUEUE_CAPACITY_EXCEEDED",
+              "EXECUTION_UNAVAILABLE"
+            ]
           },
           "message": {
             "type": "string"
@@ -963,10 +1492,7 @@
           "retryable": {
             "type": "boolean"
           }
-        },
-        "required": [
-          "error"
-        ]
+        }
       },
       "LanguageProfile": {
         "type": "object",
@@ -1036,24 +1562,116 @@
       },
       "Capabilities": {
         "type": "object",
+        "required": [
+          "apiVersion",
+          "languages",
+          "modes",
+          "files",
+          "entryPoints",
+          "maxTestCases",
+          "maxOutputBytesPerStream",
+          "limits",
+          "runtimeVersions",
+          "adapters",
+          "modeProfiles"
+        ],
         "properties": {
           "apiVersion": {
-            "type": "string"
+            "const": "v1"
           },
           "languages": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/Language"
+              "type": "string",
+              "enum": [
+                "JAVA",
+                "CPP",
+                "PYTHON"
+              ]
             }
           },
           "modes": {
             "type": "array",
             "items": {
-              "type": "string"
+              "type": "string",
+              "enum": [
+                "FULL_PROGRAM",
+                "FUNCTION"
+              ]
+            }
+          },
+          "files": {
+            "type": "object",
+            "required": [
+              "multiFile",
+              "supportsDirectories",
+              "maxFiles",
+              "maxSourceBytes",
+              "maxHttpBodyBytes"
+            ],
+            "properties": {
+              "multiFile": {
+                "const": true
+              },
+              "supportsDirectories": {
+                "const": false
+              },
+              "maxFiles": {
+                "const": 20
+              },
+              "maxSourceBytes": {
+                "const": 131072
+              },
+              "maxHttpBodyBytes": {
+                "const": 2000000
+              },
+              "maxFileNameLength": {
+                "const": 120
+              }
+            }
+          },
+          "entryPoints": {
+            "type": "object",
+            "properties": {
+              "JAVA": {
+                "const": "Main"
+              },
+              "PYTHON": {
+                "const": "main.py"
+              },
+              "CPP": {
+                "const": "main.cpp"
+              }
             }
           },
           "maxTestCases": {
-            "type": "integer"
+            "const": 50
+          },
+          "maxOutputBytesPerStream": {
+            "const": 65536
+          },
+          "limits": {
+            "type": "object",
+            "required": [
+              "maxCpuTimeMs",
+              "maxWallTimeMs",
+              "maxMemoryLimitBytes"
+            ],
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "runtimeVersions": {
+            "type": "object",
+            "required": [
+              "JAVA",
+              "CPP",
+              "PYTHON"
+            ],
+            "additionalProperties": {
+              "type": "string"
+            }
           },
           "adapters": {
             "type": "array",
@@ -1061,36 +1679,19 @@
               "$ref": "#/components/schemas/Adapter"
             }
           },
-          "languageProfiles": {
-            "type": "object",
-            "additionalProperties": {
+          "modeProfiles": {
+            "type": "object"
+          },
+          "cppStandard": {
+            "const": "c++17"
+          },
+          "cppCompilerFlags": {
+            "type": "array",
+            "items": {
               "type": "string"
             }
-          },
-          "modeProfiles": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "object",
-              "properties": {
-                "limitScope": {
-                  "type": "string"
-                },
-                "measurementScope": {
-                  "type": "string"
-                },
-                "sourceShape": {
-                  "type": "string"
-                }
-              },
-              "required": []
-            }
           }
-        },
-        "required": [
-          "apiVersion",
-          "languages",
-          "adapters"
-        ]
+        }
       },
       "RunEnvelope": {
         "type": "object",
@@ -1121,6 +1722,28 @@
           "submissionId",
           "result"
         ]
+      },
+      "SourceFile": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "content"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120,
+            "pattern": "^[A-Za-z_][A-Za-z0-9_]*\\.(cpp|h|hpp|java|py)$",
+            "description": "Flat ASCII filename; language-specific extensions and case-insensitive uniqueness enforced by runner"
+          },
+          "content": {
+            "type": "string",
+            "maxLength": 131072,
+            "description": "UTF-8 text. Combined contents limited to 131072 UTF-8 bytes"
+          }
+        }
       }
     }
   }

@@ -31,10 +31,10 @@ Poprawka `infra/judge0/isolate_job.rb` jest wymaganą częścią modułu.
 
 ## 2. Backend
 
-W katalogu `backend`:
+W katalogu `runner`:
 
 ```sh
-CODELOBBY_DEMO_ENABLED=true mvn spring-boot:run
+CODELOBBY_DEMO_ENABLED=true mvn -Pdemo spring-boot:run
 ```
 
 Domyślnie Judge0, port 8081. Demo należy włączyć do używania przykładowej
@@ -44,14 +44,14 @@ Ten sam klucz konfiguruje główny backend, nigdy przeglądarka.
 
 ## 3. Frontend
 
-W katalogu `frontend`:
+W katalogu `examples/demo-frontend`:
 
 ```sh
 npm ci
 npm run dev
 ```
 
-Otwórz `http://127.0.0.1:5174`. Proxy wskazuje domyślnie port 8081.
+Otwórz `http://127.0.0.1:5174`. Proxy wskazuje domyślnie port 8083. Dla runnera demonstracyjnego na 8081 uruchom stronę z `CODELOBBY_BACKEND_URL=http://127.0.0.1:8081 npm run dev`.
 Zajęty port powoduje błąd zamiast cichego wyboru innego adresu.
 
 ## Konfiguracja
@@ -94,7 +94,7 @@ Zatrzymanie zachowuje dane. Nie usuwaj wolumenów podczas zwykłego zakończenia
 
 ## Co przekazać
 
-Przekaż katalogi backend/frontend/infra/docs/examples/scripts oraz README i
+Przekaż katalogi runner/components/code-editor/infra/docs/examples/scripts oraz README i
 .gitignore. Pomiń lokalny judge0.conf, pliki .env, instalatory work, pobrane
 checkouty eksperymentalne, node_modules i wyniki kompilacji. Nie ma potrzeby
 przekazywać maszyny UTM. Repozytorium ani publikacja nie są wymagane do lokalnego

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from runner_contract import request_v1
 """Black-box integration checks. Requires running Spring Boot and Judge0."""
 import copy
 import json
@@ -22,7 +23,7 @@ def request(path, body=None, authenticated=True):
     if authenticated:
         headers["X-CodeLobby-Internal-Key"] = KEY
     req = urllib.request.Request(BASE + "/internal/v1" + path,
-                                 data=None if body is None else json.dumps(body).encode(), headers=headers)
+                                 data=None if body is None else json.dumps(request_v1(body)).encode(), headers=headers)
     try:
         with urllib.request.urlopen(req, timeout=180) as response:
             return response.status, json.load(response)
@@ -99,7 +100,7 @@ def run_check(adapter, source, stdin, expected):
     require(data["result"]["status"] == "ACCEPTED" and data["result"]["stdout"] == expected, "Run output mismatch")
 
 
-check("vowel Run", lambda: run_check("vowel-count-v1", vowels["sourceCode"], "hello\n", "2\n"))
+check("vowel Run", lambda: run_check("vowel-count-v1", vowels["sourceFiles"][0]["content"], "hello\n", "2\n"))
 check("palindrome Run", lambda: run_check("palindrome-length-v1", palindrome["sourceCode"], "abba\n", "4\n"))
 
 full = copy.deepcopy(vowels)

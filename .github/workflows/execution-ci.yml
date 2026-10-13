@@ -1,0 +1,53 @@
+name: Execution module CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: runner/pom.xml
+      - name: Unit and Spring integration tests
+        run: mvn -B -f runner/pom.xml clean verify
+      - name: Check default artifact has no demo classes
+        run: |
+          jar tf runner/target/execution-api-0.1.0-SNAPSHOT.jar > /tmp/execution-jar.txt
+          if grep -E '/(ExecutionController|DemoTaskCatalog|StudentSubmissionRequest)\.class$' /tmp/execution-jar.txt; then exit 1; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: execution-test-reports
+          path: runner/target/surefire-reports/
+  editor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: components/code-editor/package-lock.json
+      - run: npm --prefix components/code-editor ci
+      - run: npm --prefix components/code-editor run build:library
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r scripts/contract-requirements.txt
+      - run: python scripts/validate-contract.py

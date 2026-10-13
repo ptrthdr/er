@@ -1,106 +1,29 @@
-# Integracja modułu wykonawczego z backendem CodeLobby
+# Integracja backendu z runnerem
 
-## Uruchomienie lokalne
+Kontrakt: [openapi.json](openapi.json) i [integration-contract.md](integration-contract.md).
+Działa jako osobna usługa Spring Boot. Nie kopiuj demonstracyjnego backendu
+zarządzającego zadaniami do głównego CodeLobby.
 
-1. Uruchom Docker Desktop i stack Judge0 według `infra/README.md`.
-2. Ustaw `CODELOBBY_INTERNAL_API_KEY` na własny sekret co najmniej 32 znaków.
-   Ten sam sekret musi znać główny backend. Nie zapisuj go w Git ani froncie.
-3. W katalogu backend uruchom:
+1. Uruchom Judge0 według team-quickstart.md (włączone additional_files i compiler_options).
+2. Ustaw CODELOBBY_INTERNAL_API_KEY min 32 znaki po obu stronach, poza Git/frontem.
+3. Uruchom backend runnera: `cd runner && mvn spring-boot:run`.
+4. Pobierz capabilities i startery dla adapterów.
+5. Główny backend składa zaufane pliki zadania ze zmianami studenta,
+   sprawdza język, uprawnienia oraz pliki read-only i dostarcza taskVersionId.
+6. Run wywołuje /internal/v1/runs. Submit /internal/v1/evaluation-jobs.
+7. Zachowaj submissionId w swojej bazie; odpytuj job co 700–1000 ms,
+   zapisz wynik i usuń szczegóły testów ukrytych z widoku użytkownika.
+8. Po restarcie runnera lub 404 obsłuż utracony job zgodnie z polityką backendu.
 
-```sh
-EXECUTION_ENGINE=judge0 mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=8081
-```
+Przykład multi-file Java: examples/integration/java-run.json i java-submit.json.
+Fragmenty funkcji: vowel-evaluation.json. Nowy kontrakt nie akceptuje starych pól.
+Źródła FullProgram w jednym katalogu; punkty wejścia Main/main.py/main.cpp.
+FUNCTION: jeden plik i zaufany adapter; bez wieloplikowego drivera od backendu.
 
-Domyślnie demonstracyjne `/api/*` są wyłączone. Włącza je wyłącznie
-`CODELOBBY_DEMO_ENABLED=true`. Moduł nie wymaga bazy zadań ani frontendu.
-Judge0 ma własne techniczne Redis/Postgres; nie są bazą zadań CodeLobby.
+Główny backend odpowiada za PostgreSQL, JWT, lobby, zadania i rankingi.
+Runner ma RAM-ową kolejkę i jedną instancję workera. CI/testy: TESTING.md.
+Przykład examples/team-backend pozostaje opcjonalny; właściwa integracja
+wymaga rzeczywistego codelobby-backend, którego kodu nie mamy w tym workspace.
 
-## API v1
-
-Obsługiwane języki: CPP, PYTHON, JAVA. Sygnatury adapterów i zasady JVM opisuje
-`languages.md`. Główny backend sprawdza politykę języków dozwolonych w lobby.
-
-Każde wywołanie wymaga `X-CodeLobby-Internal-Key`.
-
-| Endpoint | Przeznaczenie |
-| --- | --- |
-| GET /internal/v1/capabilities | Dostępne języki, tryby i wersjonowane adaptery |
-| POST /internal/v1/runs | Jeden Run: requestId, language, sourceCode, stdin, limits, mode, adapterId |
-| POST /internal/v1/evaluations | Submit: submissionId, language, sourceCode, testCases, limits, mode, adapterId |
-
-Przykład gotowego żądania: `examples/integration/vowel-evaluation.json`.
-Gotowy zestaw sprawdzeń: `python3 scripts/verify-integration.py` po ustawieniu
-klucza w środowisku. Instrukcja i oczekiwane wyniki:
-`examples/integration/README.md`.
-Odpowiedź Submit: `{submissionId, result}`; Run: `{requestId, result}`.
-Dokładne pola wyników, jednostki i błędy opisuje `integration-contract.md`.
-
-## Dodawanie zadań i testów
-
-Backend przechowuje zadania, ich adapterId, starterCode, testy i limity.
-Po Submit pobiera zaufane dane i przekazuje je do modułu. Student przesyła
-tylko kod i identyfikator zadania. Przeglądarka nie wybiera autorytatywnych
-limitów, adapterów ani expectedOutput. Nowy test nie wymaga zmiany modułu.
-
-- FULL_PROGRAM: kompletny program z main(); adapterId pominięty. Dowolny tekst
-  stdin/output, testy w osobnych sandboxach, limity per test.
-- FUNCTION: kod funkcji bez main(); adapterId obowiązkowy. Testy w jednym
-  procesie, limity całego zestawu. Jedna kompilacja, 2 rozgrzewki, 5 pomiarów.
-- `palindrome-length-v1`: int longestPalindrome(const string& text).
-- `vowel-count-v1`: int countVowels(const string& text), samogłoski a/e/i/o/u.
-
-Oba obecne adaptery przyjmują jeden wiersz małych liter a–z (także pusty)
-i zwracają nieujemną liczbę. Nazwy funkcji i kod sterownika pochodzą wyłącznie
-z rejestru w module, nie z treści żądania. Nieznany adapter to HTTP 400.
-Nowe zadanie o jednej z tych sygnatur może użyć istniejącego adaptera.
-Inna sygnatura lub typ wejścia wymaga nowego zaufanego adaptera i wersjonowanego
-ID. Nie implementujemy automatycznego generowania dowolnych typów C++.
-
-## Uzgodnienia z zespołem
-
-Odpowiedzi i testy ukryte pozostają na backendzie; nie wysyłać żądań wewnętrznych
-z przeglądarki. Wynik funkcji nie zawiera wiarygodnych pomiarów per test:
-runtime/memory dotyczą całego procesu. Globals/static utrzymują się między
-wywołaniami w rundzie. Awaria procesu przerywa cały zestaw. Dokładny opis:
-`function-evaluation.md`.
-
-Nie mieszaj w rankingu różnych trybów, adapterów, zestawów testów i środowisk.
-Ustal z zespołem wersję zadania i konfiguracji benchmarku. ID zgłoszenia jest
-odsyłane, ale nie zapewnia deduplikacji. API jest synchroniczne; ponowienie może
-wykonać kod drugi raz. Docelową kolejkę i zapis wyników należy uzgodnić przed
-większą liczbą użytkowników. Obecny worker wymaga COUNT=1.
-
-Starszy PALINDROME_FUNCTION pozostaje kompatybilny jako alias
-palindrome-length-v1, ale nowe integracje używają FUNCTION + adapterId.
-Zmieniaj sygnatury przez nowe ID adapterów, a nie przez zmianę istniejącego ID.
-
-Repozytorium jest bazą do integracji i prezentacji. Nieoficjalny obraz Judge0,
-uprzywilejowane kontenery i zabezpieczenia wymagają osobnej oceny przed publicznym
-wdrożeniem. Uruchomienie na komputerze drugiego członka zespołu pozostaje do
-wykonania przez zespół; nie zostało tutaj potwierdzone.
-
-## Startery dla każdego języka
-
-Pobierz `/internal/v1/capabilities` i dla wybranego adaptera odczytaj
-`languageProfiles[language].starterCode`, `signature` i `sourceShape`.
-Zapisz wybrany starter z wersją zadania. Przekaż frontendowi `starterCodes`
-i listę języków będącą przecięciem supportedLanguages adaptera oraz polityki
-lobby. Starter zawiera TODO, nie jest poprawnym rozwiązaniem referencyjnym.
-Starsze pole signature na poziomie adaptera opisuje wyłącznie C++.
-Zakres limitów/pomiarów jest dostępny w modeProfiles i measurementScope;
-nie porównuj wyników różnych trybów w jednym rankingu.
-
-## Kolejka Submit
-
-Nowe integracje korzystają z `/internal/v1/evaluation-jobs` i pobierania statusu.
-Kontrakt, limity oraz ograniczenia pamięciowej kolejki:
-[async-submissions.md](async-submissions.md).
-
-Kontrakt maszynowy: [openapi.json](openapi.json). Instrukcja sprawdzenia:
-[openapi-guide.md](openapi-guide.md).
-
-## Osobny przykładowy backend
-
-`examples/team-backend` zawiera małą aplikację Spring Boot na localhost:8090.
-Ma własne zadanie liczenia samogłosek i 4 testy, a silnik wywołuje wyłącznie
-przez API. Instrukcja: [README przykładu](../examples/team-backend/README.md).
+Lokalny Docker korzysta z przypiętego, nieoficjalnego obrazu z privileged workerem.
+Działające E2E nie jest audytem bezpieczeństwa publicznego wdrożenia.

@@ -3,11 +3,33 @@
   "language": "CPP",
   "mode": "FUNCTION",
   "adapterId": "vowel-count-v1",
-  "sourceCode": "int countVowels(const string& text) { int count = 0; for (char c : text) if (c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u') ++count; return count; }",
-  "limits": { "cpuTimeMs": 2000, "wallTimeMs": 5000, "memoryLimitBytes": 128000000 },
+  "limits": {
+    "cpuTimeMs": 2000,
+    "wallTimeMs": 5000,
+    "memoryLimitBytes": 128000000
+  },
   "testCases": [
-    { "input": "codelobby\n", "expectedOutput": "3\n", "visibility": "PUBLIC" },
-    { "input": "aeiou\n", "expectedOutput": "5\n", "visibility": "HIDDEN" },
-    { "input": "\n", "expectedOutput": "0\n", "visibility": "HIDDEN" }
-  ]
+    {
+      "input": "codelobby\n",
+      "expectedOutput": "3\n",
+      "visibility": "PUBLIC"
+    },
+    {
+      "input": "aeiou\n",
+      "expectedOutput": "5\n",
+      "visibility": "HIDDEN"
+    },
+    {
+      "input": "\n",
+      "expectedOutput": "0\n",
+      "visibility": "HIDDEN"
+    }
+  ],
+  "sourceFiles": [
+    {
+      "path": "solution.cpp",
+      "content": "int countVowels(const string& text) { int count = 0; for (char c : text) if (c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u') ++count; return count; }"
+    }
+  ],
+  "taskVersionId": "vowels-v1"
 }

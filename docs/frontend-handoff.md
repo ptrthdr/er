@@ -1,9 +1,9 @@
 # Integracja edytora z frontendem CodeLobby
 
-`frontend/src/execution-editor.js` eksportuje `mountExecutionEditor`.
+`components/code-editor/src/execution-editor.js` eksportuje `mountExecutionEditor`.
 Komponent nie pobiera zadań i nie zna adresów API. `main.js` jest osobnym
 bootstrapem lokalnego demonstratora. Integrator musi mieć zależności CodeMirror
-z frontend/package.json oraz obsługę importu CSS w bundlerze.
+z components/code-editor/package.json oraz obsługę importu CSS w bundlerze.
 
 ## Przykład osadzenia
 
@@ -78,3 +78,11 @@ Asynchroniczny Submit: callback otrzymuje drugi argument `{onProgress}`.
 Po przyjęciu zgłoszenia odpytuje endpoint głównego backendu, przekazuje
 QUEUED/RUNNING do onProgress i ostatecznie zwraca result. Szczegóły:
 [async-submissions.md](async-submissions.md).
+
+## Build biblioteki do głównego frontendu
+
+`npm run build:library` tworzy `dist/execution-editor.js` i `dist/style.css`.
+Biblioteka eksportuje mountExecutionEditor, a CodeMirror pozostaje zewnętrzną
+zależnością npm. Zaimportuj CSS jawnie przy użyciu gotowego builda.
+Style są ograniczone do kontenera .codelobby-execution; nie zmieniają globalnego body.
+Paczka do głównego repo nie zawiera main.js ani strony demonstracyjnej.

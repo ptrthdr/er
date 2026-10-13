@@ -23,3 +23,19 @@ nie gotową instrukcją publicznego wdrożenia.
 Pomiary dotyczą CPU i szczytu pamięci procesu wykonawczego, obejmują sterownik
 oraz interpreter/JVM, pomijają kompilację. Wersje i ograniczenia:
 [languages.md](../docs/languages.md), [function-evaluation.md](../docs/function-evaluation.md).
+
+## Aktualny kontrakt płaski v1
+
+Wymagane ENABLE_ADDITIONAL_FILES=true i ENABLE_COMPILER_OPTIONS=true
+w lokalnym judge0.conf. Szablon już zawiera te ustawienia. Runner tworzy
+ZIP z walidowanych źródeł i dobiera stałe flagi; nie przyjmuje opcji klienta.
+Nie udostępniaj samego API Judge0 publicznie.
+
+Po zmianie workera restart workers. Po zmianie mountów Compose lub starej
+konfiguracji z katalogu reprodukcji odtwórz tylko server/workers z aktualnych
+plików Compose (--no-deps --force-recreate). Zachowaj hasła bazy i wolumeny.
+Nie drukuj pełnego środowiska kontenerów ani startupowych logów zawierających sekrety.
+
+Worker kompiluje wszystkie .java/.cpp, przechwytuje stdout/stderr osobno
+z limitem 64 KiB i odtwarza pristine compiled box przed każdym testem.
+Wersje języków pobiera capabilities runnera z /languages Judge0.

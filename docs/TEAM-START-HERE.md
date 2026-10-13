@@ -7,7 +7,7 @@ sprawdzeń są w docs/verification; nie oznaczają zgodności z każdym hostem.
 | Osoba | Co przeczytać / wykorzystać |
 | --- | --- |
 | Backend | backend-handoff.md, openapi.json, async-submissions.md, examples/team-backend |
-| Frontend | frontend-handoff.md, frontend/src/execution-editor.js |
+| Frontend | frontend-handoff.md, components/code-editor/src/execution-editor.js |
 | Zadania/testy | task-authoring.md, languages.md, adaptery capabilities |
 | Prezentacja / środowisko | team-quickstart.md, presentation-scenario.md, troubleshooting.md |
 
@@ -30,7 +30,7 @@ czas wywołań, FULL_PROGRAM zewnętrzny CPU. W rankingu nie mieszaj zakresów.
 ## Status i ograniczenia
 
 Lokalny Docker: przypięty nieoficjalny obraz amd64 i wymagany worker Ruby.
-Jeden backend/worker; nie uruchamiaj równolegle innych instancji na tym samym
+Jeden runner/worker; nie uruchamiaj równolegle innych instancji na tym samym
 Judge0 przy benchmarkach. Kolejka RAM, max 10 oczekujących i 100 rekordów,
 wyniki wygasają po 30 min; restart je usuwa. Przyjęte Submit czeka na sandbox.
 Wewnętrzny czas funkcji nie jest odporny na celowe manipulacje. To MVP do

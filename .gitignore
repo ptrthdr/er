@@ -1,9 +1,9 @@
 # Build artifacts and editor files
-frontend/node_modules/
-frontend/dist/
-backend/target/
-backend/.idea/
-backend/.vscode/
+components/code-editor/node_modules/
+components/code-editor/dist/
+runner/target/
+runner/.idea/
+runner/.vscode/
 .DS_Store
 
 # Local secrets and configuration; commit templates only
@@ -24,3 +24,6 @@ test/program
 examples/team-backend/target/
 
 deliverables/
+
+examples/demo-frontend/node_modules/
+examples/demo-frontend/dist/
