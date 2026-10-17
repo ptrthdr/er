@@ -10,6 +10,7 @@ Celem tej wersji jest przegląd kontraktu i uzgodnienie integracji.
 3. [Przykłady żądań](../examples/integration/README.md).
 4. [Uruchomienie lokalne](team-quickstart.md) - bez profilu demo.
 5. [Testy](TESTING.md) i [ostatni raport](verification/current-check-2026-10-13.md).
+6. [Przegląd API, poprawki i sugestie do integracji](API-REVIEW.md).
 
 ## Co zawiera repo
 

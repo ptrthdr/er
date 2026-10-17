@@ -6,7 +6,7 @@ import java.util.List;
 
 /** Complete, trusted task snapshot supplied by the main backend. */
 public record TrustedEvaluationRequest(
-        @NotBlank @Size(max=128) @Pattern(regexp="[A-Za-z0-9][A-Za-z0-9._:-]{0,127}") String submissionId,
+        @NotBlank @Size(max=128) @Pattern(regexp=TrustedEvaluationRequest.SUBMISSION_ID_PATTERN) String submissionId,
         @NotBlank @Size(max=128) String taskVersionId,
         @NotNull Language language,
         @NotNull Mode mode,
@@ -15,6 +15,8 @@ public record TrustedEvaluationRequest(
         @NotNull @Valid Limits limits,
         @NotNull @Size(min=1,max=50) List<@NotNull @Valid TestCase> testCases
 ) {
+    public static final String SUBMISSION_ID_PATTERN = "[A-Za-z0-9][A-Za-z0-9._:-]{0,127}";
+
     // Java-only convenience for existing demo and service tests, not an HTTP alias.
     public TrustedEvaluationRequest(String id, Language language, String source, Limits limits,
                                     List<TestCase> tests, Mode mode, String adapterId) {

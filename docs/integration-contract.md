@@ -55,7 +55,8 @@ submissionId ma 1–128 znaków URL-safe (litery/cyfry oraz . _ : -), aby można
 Fingerprint sortuje sourceFiles po path; treść plików nie jest normalizowana.
 Kolejność testów ma znaczenie. Wersja zadania, limity, język i tryb należą do fingerprintu.
 Brak adapterId i null są równoważne po deserializacji do modelu.
-GET /evaluation-jobs/{submissionId}: 200 lub 404.
+GET /evaluation-jobs/{submissionId}: 200 lub 404; nieprawidłowy format ID daje 400.
+Odpowiedzi POST /evaluation-jobs (202 i replay 200) zawierają Location z adresem do odpytywania joba.
 FINISHED jest zakończeniem oceny, verdict w result.status; FAILED to problem obsługi.
 Pamięć: 1 wątek, 10 oczekujących, 100 jobów, 30 minut po zakończeniu.
 Restart usuwa joby/deduplikację. PostgreSQL oraz recovery/retry należą do głównego backendu.
@@ -79,6 +80,12 @@ Format `{code,message,retryable}` dla błędów HTTP oraz błędu joba.
 400 INVALID_REQUEST/INVALID_SOURCE_FILES, 401 UNAUTHORIZED, 404 JOB_NOT_FOUND,
 409 SUBMISSION_ID_CONFLICT, 413 PAYLOAD_TOO_LARGE, 429 QUEUE_CAPACITY_EXCEEDED,
 503 EXECUTION_UNAVAILABLE. 429 i przejściowe 503 retryable=true.
+Nieistniejący endpoint daje 404 RESOURCE_NOT_FOUND, zła metoda 405 METHOD_NOT_ALLOWED
+(z nagłówkiem Allow), nieobsługiwany Accept 406 NOT_ACCEPTABLE, a Content-Type
+415 UNSUPPORTED_MEDIA_TYPE. Nieprzewidziany błąd daje 500 INTERNAL_SERVER_ERROR
+z retryable=false. Odpowiedź błędu jest JSON-em także przy nieobsługiwanym Accept.
+Walidacja wskazuje nazwy błędnych pól, bez zwracania kodu źródłowego lub wartości pól.
+Szczegóły wyjątków i odpowiedzi sandboxa nie trafiają do komunikatów błędów HTTP.
 Błędy rozwiązania to result.status, nie błąd HTTP.
 X-CodeLobby-Internal-Key min 32 znaki, tylko między serwerami. Nie wystawiać
 runnera/Judge0 publicznie. Między hostami sieć prywatna i TLS.

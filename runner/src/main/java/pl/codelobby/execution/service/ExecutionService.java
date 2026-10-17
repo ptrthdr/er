@@ -285,9 +285,17 @@ public class ExecutionService {
                     measured.sandboxCpuTime() == null ? null : measured.sandboxCpuTime() * 1000.0);
         }
         boolean measured = benchmark != null && "COMPLETED".equals(benchmark.status());
+        Long responseRuntime = null;
+        Long responsePeakMemory = null;
+        if (measured) {
+            responseRuntime = Math.round(benchmark.medianRuntimeMs());
+            responsePeakMemory = benchmark.peakMemoryBytes();
+        } else if (!benchmarkEnabled) {
+            responseRuntime = runtimeTotal;
+            responsePeakMemory = peakMemory;
+        }
         return new SubmissionResponse(finalStatus, passed, request.testCases().size(),
-                measured ? Math.round(benchmark.medianRuntimeMs()) : benchmarkEnabled ? null : runtimeTotal,
-                measured ? benchmark.peakMemoryBytes() : benchmarkEnabled ? null : peakMemory,
+                responseRuntime, responsePeakMemory,
                 nonEmpty(response.compile_output()), results, null, message, benchmark);
     }
 
