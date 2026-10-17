@@ -2,6 +2,10 @@ package pl.codelobby.execution.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -66,6 +70,43 @@ class InternalApiIntegrationTest {
  @Test void versionWithoutTaskIdIsRejected() throws Exception {
  String body=payload("bad-reference").replace("\"taskVersionId\":\"unit-v1\",", "");
  mvc.perform(post("/internal/v1/evaluation-jobs").header("X-CodeLobby-Internal-Key",KEY).contentType("application/json").content(body)).andExpect(status().isBadRequest());
+ }
+ static Stream<Arguments> asyncFailures() {
+ return Stream.of(
+ Arguments.of(new org.springframework.web.client.ResourceAccessException("private sandbox diagnostic"),"EXECUTION_UNAVAILABLE",true),
+ Arguments.of(new IllegalStateException("private sandbox diagnostic"),"INTERNAL_SERVER_ERROR",false));
+ }
+ @ParameterizedTest @MethodSource("asyncFailures")
+ void failedJobReturnsSafeErrorAndReplayDoesNotRunAgain(RuntimeException failure,String code,boolean retryable) throws Exception {
+ when(judge.executeSuiteFiles(any(),anyList(),any(),any())).thenThrow(failure);
+ String id="failed-"+code.toLowerCase(java.util.Locale.ROOT),body=payload(id);
+ mvc.perform(post("/internal/v1/evaluation-jobs").header("X-CodeLobby-Internal-Key",KEY).contentType("application/json").content(body))
+ .andExpect(status().isAccepted());
+ long deadline=System.nanoTime()+java.util.concurrent.TimeUnit.SECONDS.toNanos(5);
+ com.fasterxml.jackson.databind.JsonNode job;
+ do {
+ var response=mvc.perform(get("/internal/v1/evaluation-jobs/{id}",id).header("X-CodeLobby-Internal-Key",KEY))
+ .andExpect(status().isOk()).andExpect(header().string("Cache-Control","no-store")).andReturn().getResponse();
+ assertThat(response.getContentAsString()).doesNotContain("private sandbox diagnostic");
+ job=mapper.readTree(response.getContentAsString());
+ if(job.path("state").asText().equals("FAILED")) break;
+ Thread.sleep(5);
+ } while(System.nanoTime()<deadline);
+ assertThat(job.path("state").asText()).isEqualTo("FAILED");
+ assertThat(job.at("/error/code").asText()).isEqualTo(code);
+ assertThat(job.at("/error/retryable").asBoolean()).isEqualTo(retryable);
+ assertThat(job.path("result").isNull()).isTrue();
+ mvc.perform(post("/internal/v1/evaluation-jobs").header("X-CodeLobby-Internal-Key",KEY).contentType("application/json").content(body))
+ .andExpect(status().isOk()).andExpect(header().string("Location","http://localhost/internal/v1/evaluation-jobs/"+id))
+ .andExpect(jsonPath("$.state").value("FAILED")).andExpect(jsonPath("$.error.code").value(code));
+ verify(judge,times(1)).executeSuiteFiles(any(),anyList(),any(),any());
+ }
+ @Test void invalidSourceFilesReturnTheirOwnCodeBeforeCallingJudge() throws Exception {
+ mvc.perform(post("/internal/v1/evaluation-jobs").header("X-CodeLobby-Internal-Key",KEY).contentType("application/json")
+ .content(payload("invalid-files").replace("main.cpp","../main.cpp")))
+ .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("INVALID_SOURCE_FILES"))
+ .andExpect(jsonPath("$.retryable").value(false));
+ verify(judge,never()).executeSuiteFiles(any(),anyList(),any(),any());
  }
  @Test void unknownFieldsAreRejected() throws Exception {
  String body=payload("unknown-field").replace("\"language\":\"CPP\"", "\"language\":\"CPP\",\"compilerOptions\":\"unsafe\"");

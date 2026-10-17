@@ -6,6 +6,12 @@ aktywnych jobów, 200 dla ponowień zakończonych. GET zwraca snapshot 200 lub 4
 QUEUED oznacza oczekiwanie również na wspólną blokadę sandboxa;
 RUNNING/startedAt ustawiane po jej uzyskaniu. FINISHED jest oceną zakończoną,
 nie automatycznie Accepted. FAILED ma obiekt error {code,message,retryable}.
+GET zwraca HTTP 200 również dla FAILED. Awaria infrastruktury ma
+EXECUTION_UNAVAILABLE/retryable=true, a nieoczekiwany błąd aplikacji
+INTERNAL_SERVER_ERROR/retryable=false. Błędy walidacji zachowują własny kod.
+Ponowienie POST z tym samym ID zwraca zapisany FAILED bez wykonania.
+Nowa próba po błędzie przejściowym wymaga nowego ID, powiązanego z oryginalnym
+zgłoszeniem po stronie backendu. Szczegóły: sekcja ponawiania w kontrakcie.
 
 1 wątek, 10 oczekujących, 100 jobów, 30 minut retencji po zakończeniu.
 Deduplikacja sortuje pliki po path; kolejność testów i zawartość pozostają istotne.

@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "CodeLobby Execution \u2014 trusted team API",
+    "title": "CodeLobby Execution — trusted team API",
     "version": "1.0.0",
     "description": "CodeLobby Runner v1: flat multi-file projects. SourceFiles/taskVersionId replace the local prototype. FUNCTION supports one allowlisted fragment."
   },
@@ -42,7 +42,7 @@
             }
           },
           "503": {
-            "description": "EXECUTION_UNAVAILABLE; synchronous sandbox waits <= 2 seconds; queued jobs wait interruptibly until free",
+            "description": "EXECUTION_UNAVAILABLE; internal API or execution engine unavailable. Safe error with retryable=true.",
             "content": {
               "application/json": {
                 "schema": {
@@ -80,6 +80,16 @@
                 }
               }
             }
+          },
+          "default": {
+            "description": "Other HTTP failures use the same error envelope. Unclassified HTTP exceptions use HTTP_ERROR; unexpected server failures use INTERNAL_SERVER_ERROR. Neither is automatically retryable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
@@ -99,7 +109,7 @@
             }
           },
           "400": {
-            "description": "INVALID_REQUEST / INVALID_REQUEST / INVALID_REQUEST; fix payload",
+            "description": "INVALID_REQUEST or INVALID_SOURCE_FILES; fix the payload before retrying.",
             "content": {
               "application/json": {
                 "schema": {
@@ -119,7 +129,7 @@
             }
           },
           "503": {
-            "description": "EXECUTION_UNAVAILABLE; synchronous sandbox waits <= 2 seconds; queued jobs wait interruptibly until free",
+            "description": "EXECUTION_UNAVAILABLE; internal API or execution engine unavailable. Safe error with retryable=true.",
             "content": {
               "application/json": {
                 "schema": {
@@ -170,6 +180,16 @@
           },
           "415": {
             "description": "Unsupported Content-Type. Send application/json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Other HTTP failures use the same error envelope. Unclassified HTTP exceptions use HTTP_ERROR; unexpected server failures use INTERNAL_SERVER_ERROR. Neither is automatically retryable.",
             "content": {
               "application/json": {
                 "schema": {
@@ -228,7 +248,7 @@
             }
           },
           "400": {
-            "description": "INVALID_REQUEST / INVALID_REQUEST / INVALID_REQUEST; fix payload",
+            "description": "INVALID_REQUEST or INVALID_SOURCE_FILES; fix the payload before retrying.",
             "content": {
               "application/json": {
                 "schema": {
@@ -248,7 +268,7 @@
             }
           },
           "503": {
-            "description": "EXECUTION_UNAVAILABLE; synchronous sandbox waits <= 2 seconds; queued jobs wait interruptibly until free",
+            "description": "EXECUTION_UNAVAILABLE; internal API or execution engine unavailable. Safe error with retryable=true.",
             "content": {
               "application/json": {
                 "schema": {
@@ -299,6 +319,16 @@
           },
           "415": {
             "description": "Unsupported Content-Type. Send application/json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Other HTTP failures use the same error envelope. Unclassified HTTP exceptions use HTTP_ERROR; unexpected server failures use INTERNAL_SERVER_ERROR. Neither is automatically retryable.",
             "content": {
               "application/json": {
                 "schema": {
@@ -378,7 +408,7 @@
             }
           },
           "400": {
-            "description": "INVALID_REQUEST / INVALID_REQUEST / INVALID_REQUEST; fix payload",
+            "description": "INVALID_REQUEST or INVALID_SOURCE_FILES; fix the payload before retrying.",
             "content": {
               "application/json": {
                 "schema": {
@@ -428,7 +458,7 @@
             }
           },
           "503": {
-            "description": "EXECUTION_UNAVAILABLE; synchronous sandbox waits <= 2 seconds; queued jobs wait interruptibly until free",
+            "description": "EXECUTION_UNAVAILABLE; internal API or execution engine unavailable. Safe error with retryable=true.",
             "content": {
               "application/json": {
                 "schema": {
@@ -488,6 +518,16 @@
           },
           "415": {
             "description": "Unsupported Content-Type. Send application/json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Other HTTP failures use the same error envelope. Unclassified HTTP exceptions use HTTP_ERROR; unexpected server failures use INTERNAL_SERVER_ERROR. Neither is automatically retryable.",
             "content": {
               "application/json": {
                 "schema": {
@@ -577,7 +617,7 @@
             }
           },
           "503": {
-            "description": "EXECUTION_UNAVAILABLE; synchronous sandbox waits <= 2 seconds; queued jobs wait interruptibly until free",
+            "description": "EXECUTION_UNAVAILABLE; internal API or execution engine unavailable. Safe error with retryable=true.",
             "content": {
               "application/json": {
                 "schema": {
@@ -618,6 +658,16 @@
           },
           "400": {
             "description": "Invalid submission ID.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Other HTTP failures use the same error envelope. Unclassified HTTP exceptions use HTTP_ERROR; unexpected server failures use INTERNAL_SERVER_ERROR. Neither is automatically retryable.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1673,7 +1723,7 @@
           "state",
           "createdAt"
         ],
-        "description": "FINISHED means evaluation finished, not necessarily Accepted. FAILED means engine/job failure. QUEUED includes waiting for sandbox. RAM only: all jobs lost at restart; completed results expire after 30 min. Same ID + identical payload replays stored job, different payload -> 409. Use a new ID for an intentional retry after FAILED. No durable exactly-once guarantee."
+        "description": "FINISHED means evaluation finished, not necessarily Accepted. FAILED has a safe error; recognized infrastructure failures are retryable, unexpected application failures are not. GET still returns HTTP 200 for FAILED. QUEUED includes waiting for sandbox. RAM only: jobs are lost on restart; completed results expire after 30 min. Same ID + identical payload replays stored job without execution, including FAILED; different payload gives 409. Intentional retry after retryable FAILED needs a new attempt ID linked to the original submission in the backend. No durable exactly-once guarantee."
       },
       "Error": {
         "type": "object",
@@ -1700,7 +1750,8 @@
               "METHOD_NOT_ALLOWED",
               "NOT_ACCEPTABLE",
               "UNSUPPORTED_MEDIA_TYPE",
-              "INTERNAL_SERVER_ERROR"
+              "INTERNAL_SERVER_ERROR",
+              "HTTP_ERROR"
             ]
           },
           "message": {
@@ -1710,7 +1761,7 @@
             "type": "boolean"
           }
         },
-        "description": "Stable HTTP and job error envelope. Internal exception messages and source code are not returned. Unexpected HTTP 500 errors are not retryable."
+        "description": "Stable HTTP and job error envelope. Expected failures carry their own code. Internal exception details are not returned. Unexpected HTTP and job failures use INTERNAL_SERVER_ERROR with retryable=false; recognized infrastructure failures use EXECUTION_UNAVAILABLE with retryable=true. HTTP_ERROR is the safe fallback for an unclassified HTTP exception. Clients use code and retryable, never parse message."
       },
       "LanguageProfile": {
         "type": "object",

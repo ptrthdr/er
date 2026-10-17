@@ -84,9 +84,37 @@ Nieistniejący endpoint daje 404 RESOURCE_NOT_FOUND, zła metoda 405 METHOD_NOT_
 (z nagłówkiem Allow), nieobsługiwany Accept 406 NOT_ACCEPTABLE, a Content-Type
 415 UNSUPPORTED_MEDIA_TYPE. Nieprzewidziany błąd daje 500 INTERNAL_SERVER_ERROR
 z retryable=false. Odpowiedź błędu jest JSON-em także przy nieobsługiwanym Accept.
+Pozostałe niesklasyfikowane błędy HTTP 4xx mają kod HTTP_ERROR;
+sam status 409 nie oznacza automatycznie konfliktu submissionId.
 Walidacja wskazuje nazwy błędnych pól, bez zwracania kodu źródłowego lub wartości pól.
 Szczegóły wyjątków i odpowiedzi sandboxa nie trafiają do komunikatów błędów HTTP.
 Błędy rozwiązania to result.status, nie błąd HTTP.
+
+Backend podejmuje decyzje na podstawie code i retryable, nie tekstu message.
+Wyjątki oczekiwane dziedziczą po ApiException i same określają status, kod
+oraz możliwość ponowienia. Ten sam kod trafia do odpowiedzi HTTP i error joba.
+ExecutionEngineUnavailableException pozostaje osobnym wyjątkiem infrastruktury:
+szczegóły są logowane, a odpowiedź zawiera wyłącznie bezpieczny komunikat.
+Nieoczekiwany wyjątek w jobie daje FAILED z INTERNAL_SERVER_ERROR i retryable=false,
+tak samo jak nieoczekiwany błąd synchroniczny. GET tego joba nadal ma HTTP 200,
+bo odczyt stanu się powiódł; backend musi sprawdzić state i error.
+
+Ponawianie po stronie backendu:
+
+- Po 429 lub 503 przed przyjęciem joba: ponów później z tym samym ID i danymi.
+- Po timeout lub utracie odpowiedzi POST: sprawdź GET po ID albo wyślij identyczny
+  POST z tym samym ID. W czasie retencji nie uruchomi to drugiego joba.
+- Po FAILED z retryable=true: nowa próba wykonania wymaga nowego submissionId,
+  powiązanego z tym samym zgłoszeniem w bazie backendu. Stare ID zwraca zapisany FAILED.
+- Po błędzie z retryable=false: zakończ automatyczne ponawianie i zapisz przyczynę.
+  409 wymaga sprawdzenia ID i danych, a 404 może oznaczać restart lub wygaśnięcie;
+  najpierw porównaj stan z zapisem w bazie.
+
+Ponowienia powinny mieć odstęp i limit prób. Po restarcie runnera deduplikacja
+nie obowiązuje; decyzja o odtworzeniu pracy należy do backendu. Runnerowy error
+jest kontraktem między serwerami. Publiczne API CodeLobby nadal składa własne
+ApiErrorResponse z timestamp; klucz wewnętrzny nigdy nie trafia do przeglądarki.
+
 X-CodeLobby-Internal-Key min 32 znaki, tylko między serwerami. Nie wystawiać
 runnera/Judge0 publicznie. Między hostami sieć prywatna i TLS.
 capabilities pobiera faktyczne nazwy wersji z Judge0; cache w procesie runnera.
