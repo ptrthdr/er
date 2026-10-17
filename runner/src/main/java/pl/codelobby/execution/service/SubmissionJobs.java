@@ -9,6 +9,8 @@ import java.util.LinkedHashMap;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -18,6 +20,7 @@ import pl.codelobby.execution.api.TrustedEvaluationRequest;
 /** In-memory job coordination. Persistent submission storage belongs to the main backend. */
 @Service
 public class SubmissionJobs {
+    private static final Logger log = LoggerFactory.getLogger(SubmissionJobs.class);
     public enum State { QUEUED, RUNNING, FINISHED, FAILED }
     public record Snapshot(String submissionId, State state, Instant createdAt,
                            Instant startedAt, Instant finishedAt, SubmissionResponse result, pl.codelobby.execution.api.ApiError error) { }
@@ -86,7 +89,10 @@ public class SubmissionJobs {
             synchronized (this) { job.state = State.RUNNING; job.started = Instant.now(); }
         }); }
         catch (InvalidEvaluationException e) { error = new pl.codelobby.execution.api.ApiError("INVALID_REQUEST", "Nieprawidłowe dane oceny", false); }
-        catch (Exception e) { error = new pl.codelobby.execution.api.ApiError("EXECUTION_UNAVAILABLE", "Nie udało się ukończyć oceny", true); }
+        catch (Exception e) {
+            log.error("Evaluation job {} failed", job.id, e);
+            error = new pl.codelobby.execution.api.ApiError("EXECUTION_UNAVAILABLE", "Nie udało się ukończyć oceny", true);
+        }
         synchronized (this) {
             job.result = result; job.error = error; job.finished = Instant.now();
             job.state = error == null ? State.FINISHED : State.FAILED;

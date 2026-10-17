@@ -50,6 +50,36 @@
                 }
               }
             }
+          },
+          "405": {
+            "description": "HTTP method not supported; the Allow header lists supported methods.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "406": {
+            "description": "Only JSON responses are supported.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error. Internal details are not returned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
@@ -100,6 +130,46 @@
           },
           "413": {
             "description": "Raw body exceeds 2000000 bytes, rejected before JSON parsing",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "HTTP method not supported; the Allow header lists supported methods.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "406": {
+            "description": "Only JSON responses are supported.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error. Internal details are not returned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Content-Type. Send application/json.",
             "content": {
               "application/json": {
                 "schema": {
@@ -196,6 +266,46 @@
                 }
               }
             }
+          },
+          "405": {
+            "description": "HTTP method not supported; the Allow header lists supported methods.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "406": {
+            "description": "Only JSON responses are supported.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error. Internal details are not returned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Content-Type. Send application/json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         },
         "requestBody": {
@@ -254,6 +364,15 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Job"
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "description": "URL used to poll this job.",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
                 }
               }
             }
@@ -324,6 +443,55 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Job"
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "description": "URL used to poll this job.",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "HTTP method not supported; the Allow header lists supported methods.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "406": {
+            "description": "Only JSON responses are supported.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error. Internal details are not returned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Content-Type. Send application/json.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -417,6 +585,46 @@
                 }
               }
             }
+          },
+          "405": {
+            "description": "HTTP method not supported; the Allow header lists supported methods.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "406": {
+            "description": "Only JSON responses are supported.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error. Internal details are not returned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid submission ID.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         },
         "parameters": [
@@ -425,7 +633,10 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "[A-Za-z0-9][A-Za-z0-9._:-]{0,127}"
             },
             "description": "submissionId from the accepted request"
           }
@@ -1483,7 +1694,13 @@
               "SUBMISSION_ID_CONFLICT",
               "PAYLOAD_TOO_LARGE",
               "QUEUE_CAPACITY_EXCEEDED",
-              "EXECUTION_UNAVAILABLE"
+              "EXECUTION_UNAVAILABLE",
+              "FORBIDDEN",
+              "RESOURCE_NOT_FOUND",
+              "METHOD_NOT_ALLOWED",
+              "NOT_ACCEPTABLE",
+              "UNSUPPORTED_MEDIA_TYPE",
+              "INTERNAL_SERVER_ERROR"
             ]
           },
           "message": {
@@ -1492,7 +1709,8 @@
           "retryable": {
             "type": "boolean"
           }
-        }
+        },
+        "description": "Stable HTTP and job error envelope. Internal exception messages and source code are not returned. Unexpected HTTP 500 errors are not retryable."
       },
       "LanguageProfile": {
         "type": "object",
