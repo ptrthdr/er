@@ -4,7 +4,18 @@ Repo ma już dobry punkt wyjścia: osobne wewnętrzne API, klucz serwerowy,
 limity żądań, walidację plików, kolejkę i testy. Nie ma potrzeby zmieniać
 technologii ani dodawać kolejnych usług na tym etapie.
 
-## Poprawki w tym PR
+## Obecna obsługa API
+
+- Oczekiwane błędy korzystają z ApiException ze statusem HTTP, kodem i retryable,
+  tak jak w głównym backendzie CodeLobby. Brak joba, konflikt ID, pełna kolejka,
+  zbyt duże żądanie i nieprawidłowe dane mają konkretne wyjątki. Handler nie
+  odgaduje już przyczyny biznesowej na podstawie numeru statusu HTTP.
+- Odpowiedzi HTTP i error joba korzystają z tego samego mapowania. Nieoczekiwany
+  błąd joba ma INTERNAL_SERVER_ERROR/retryable=false; tylko rozpoznana awaria
+  infrastruktury ma EXECUTION_UNAVAILABLE/retryable=true. Kod błędu plików
+  INVALID_SOURCE_FILES jest zachowany także w jobie.
+- Kontrakt opisuje, kiedy ponowić ten sam POST i kiedy utworzyć nową próbę.
+  Replay FAILED nie uruchamia oceny drugi raz, nawet gdy error.retryable=true.
 
 - Błędy Spring MVC, np. zła metoda HTTP lub Content-Type, mają teraz ten sam
   format `{code, message, retryable}` co pozostałe błędy API. Zachowane są

@@ -11,6 +11,9 @@ mockowany w testach Spring; te testy nie potwierdzają izolacji sandboxa.
 Testy API obejmują też 404/405/406/415/500, walidację ID i pól zagnieżdżonych,
 zachowanie nagłówka Allow, Location do odpytywania oraz brak szczegółów wyjątków
 w odpowiedziach. Brakujące metryki pozostają null również przy nieudanym benchmarku.
+Sprawdzane są też kody konkretnych wyjątków (w tym dwa różne błędy 400),
+rozróżnienie awarii infrastruktury i błędu aplikacji w jobie oraz replay FAILED
+bez kolejnego wykonania. Testy pełnego kontekstu weryfikują odczyt FAILED przez HTTP.
 Raporty runner/target/surefire-reports.
 Mockito mock-maker-subclass nie wymaga dynamicznego agenta.
 

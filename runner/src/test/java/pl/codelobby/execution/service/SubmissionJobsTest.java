@@ -7,7 +7,10 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.*;
-import org.springframework.web.server.ResponseStatusException;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import java.util.stream.Stream;
 import pl.codelobby.execution.api.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -40,11 +43,10 @@ class SubmissionJobsTest {
         var req = request("same", "code");
         jobs.enqueue(req); jobs.enqueue(req);
         assertThatThrownBy(() -> jobs.enqueue(request("same", "changed")))
-            .isInstanceOfSatisfying(ResponseStatusException.class, e -> assertThat(e.getStatusCode().value()).isEqualTo(409));
+            .isInstanceOf(SubmissionIdConflictException.class);
     }
     @Test void unknownIdIs404() {
-        assertThatThrownBy(() -> jobs.get("missing")).isInstanceOfSatisfying(ResponseStatusException.class,
-            e -> assertThat(e.getStatusCode().value()).isEqualTo(404));
+        assertThatThrownBy(() -> jobs.get("missing")).isInstanceOf(JobNotFoundException.class);
     }
     @Test void stateChangesAfterSandboxCallbackAndFinishes() throws Exception {
         CountDownLatch entered = new CountDownLatch(1), start = new CountDownLatch(1), finish = new CountDownLatch(1);
@@ -64,10 +66,29 @@ class SubmissionJobsTest {
             assertThat(jobs.get("state").result().status()).isEqualTo("WRONG_ANSWER");
         } finally { start.countDown(); finish.countDown(); }
     }
-    @Test void infrastructureFailureBecomesFailedWithoutLeakingException() throws Exception {
-        when(engine.submitQueued(any(), any())).thenThrow(new IllegalStateException("sensitive detail"));
-        jobs.enqueue(request("failure", "code")); awaitState("failure", SubmissionJobs.State.FAILED);
-        assertThat(jobs.get("failure").error().message()).doesNotContain("sensitive");
+    static Stream<Arguments> jobFailures() {
+        return Stream.of(
+            Arguments.of(new ExecutionEngineUnavailableException("sensitive detail", null), "EXECUTION_UNAVAILABLE", true),
+            Arguments.of(new IllegalStateException("sensitive detail"), "INTERNAL_SERVER_ERROR", false),
+            Arguments.of(new InvalidEvaluationException("Nieprawidłowe dane oceny"), "INVALID_REQUEST", false),
+            Arguments.of(new InvalidSourceFilesException("Niedozwolone pliki"), "INVALID_SOURCE_FILES", false)
+        );
+    }
+    @ParameterizedTest
+    @MethodSource("jobFailures")
+    void failedJobKeepsTheCorrectErrorAndReplayDoesNotExecuteAgain(
+            RuntimeException exception, String code, boolean retryable) throws Exception {
+        when(engine.submitQueued(any(), any())).thenThrow(exception);
+        var input = request("failure", "code");
+        jobs.enqueue(input); awaitState("failure", SubmissionJobs.State.FAILED);
+        var failed = jobs.get("failure");
+        assertThat(failed.error().code()).isEqualTo(code);
+        assertThat(failed.error().retryable()).isEqualTo(retryable);
+        assertThat(failed.error().message()).doesNotContain("sensitive");
+        assertThat(failed.result()).isNull();
+        assertThat(failed.finishedAt()).isNotNull();
+        assertThat(jobs.enqueue(input)).isEqualTo(failed);
+        verify(engine, times(1)).submitQueued(any(), any());
     }
     @Test void queueCapacityRejectsAndDoesNotRetainRejectedId() throws Exception {
         CountDownLatch entered = new CountDownLatch(1), release = new CountDownLatch(1);
@@ -75,9 +96,8 @@ class SubmissionJobsTest {
         try {
             jobs.enqueue(request("active", "code")); assertThat(entered.await(5, TimeUnit.SECONDS)).isTrue();
             for (int i=0; i<10; i++) jobs.enqueue(request("queued-"+i, "code"));
-            assertThatThrownBy(() -> jobs.enqueue(request("overflow", "code"))).isInstanceOfSatisfying(ResponseStatusException.class,
-                e -> assertThat(e.getStatusCode().value()).isEqualTo(429));
-            assertThatThrownBy(() -> jobs.get("overflow")).isInstanceOf(ResponseStatusException.class);
+            assertThatThrownBy(() -> jobs.enqueue(request("overflow", "code"))).isInstanceOf(QueueCapacityExceededException.class);
+            assertThatThrownBy(() -> jobs.get("overflow")).isInstanceOf(JobNotFoundException.class);
         } finally { release.countDown(); }
     }
     @Test void fileOrderDoesNotChangeFingerprintButTaskVersionDoes() throws Exception {
@@ -91,7 +111,7 @@ class SubmissionJobsTest {
         verify(engine,times(1)).submitQueued(any(),any());
         var changed=new TrustedEvaluationRequest(first.submissionId(),"v2",first.language(),first.mode(),null,
             first.sourceFiles(),first.limits(),first.testCases());
-        assertThatThrownBy(()->jobs.enqueue(changed)).isInstanceOfSatisfying(ResponseStatusException.class,e->assertThat(e.getStatusCode().value()).isEqualTo(409));
+        assertThatThrownBy(()->jobs.enqueue(changed)).isInstanceOf(SubmissionIdConflictException.class);
     }
     void awaitState(String id, SubmissionJobs.State state) throws Exception {
         long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);

@@ -4,7 +4,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -19,6 +18,12 @@ import pl.codelobby.execution.config.Judge0Properties;
 import pl.codelobby.execution.judge0.Judge0Client;
 import pl.codelobby.execution.service.ExecutionEngineUnavailableException;
 import pl.codelobby.execution.service.ExecutionService;
+import pl.codelobby.execution.service.InvalidEvaluationException;
+import pl.codelobby.execution.service.InvalidSourceFilesException;
+import pl.codelobby.execution.service.JobNotFoundException;
+import pl.codelobby.execution.service.PayloadTooLargeException;
+import pl.codelobby.execution.service.QueueCapacityExceededException;
+import pl.codelobby.execution.service.SubmissionIdConflictException;
 import pl.codelobby.execution.service.SubmissionJobs;
 
 import java.time.Instant;
@@ -111,17 +116,42 @@ class ApiErrorResponsesTest {
         verifyNoInteractions(executionService, jobs);
     }
 
+    static Stream<Arguments> expectedApiFailures() {
+        return Stream.of(
+                Arguments.of(new InvalidEvaluationException("Nieprawidłowe dane oceny"), 400, "INVALID_REQUEST", false),
+                Arguments.of(new InvalidSourceFilesException("Niedozwolone pliki"), 400, "INVALID_SOURCE_FILES", false),
+                Arguments.of(new JobNotFoundException(), 404, "JOB_NOT_FOUND", false),
+                Arguments.of(new SubmissionIdConflictException(), 409, "SUBMISSION_ID_CONFLICT", false),
+                Arguments.of(new PayloadTooLargeException(), 413, "PAYLOAD_TOO_LARGE", false),
+                Arguments.of(new QueueCapacityExceededException(), 429, "QUEUE_CAPACITY_EXCEEDED", true)
+        );
+    }
+
     @ParameterizedTest
-    @CsvSource({"409,SUBMISSION_ID_CONFLICT,false", "429,QUEUE_CAPACITY_EXCEEDED,true",
-            "503,EXECUTION_UNAVAILABLE,true", "500,INTERNAL_SERVER_ERROR,false"})
-    void statusErrorsDoNotForwardInternalReasons(int expectedStatus, String code, boolean retryable) throws Exception {
-        when(jobs.enqueue(any())).thenThrow(new ResponseStatusException(HttpStatus.valueOf(expectedStatus), PRIVATE_DETAIL));
+    @MethodSource("expectedApiFailures")
+    void expectedFailuresCarryTheirOwnErrorCode(RuntimeException exception, int expectedStatus,
+                                                String code, boolean retryable) throws Exception {
+        when(jobs.enqueue(any())).thenThrow(exception);
 
         mvc.perform(post("/internal/v1/evaluation-jobs").header("X-CodeLobby-Internal-Key", KEY)
                         .contentType(MediaType.APPLICATION_JSON).content(EVALUATION))
                 .andExpect(status().is(expectedStatus))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(header().string("Cache-Control", "no-store"))
                 .andExpect(jsonPath("$.code").value(code))
                 .andExpect(jsonPath("$.retryable").value(retryable))
+                .andExpect(content().string(not(containsString(PRIVATE_DETAIL))));
+    }
+
+    @Test
+    void unrelatedConflictIsNotReportedAsASubmissionIdConflict() throws Exception {
+        when(jobs.enqueue(any())).thenThrow(new ResponseStatusException(HttpStatus.CONFLICT, PRIVATE_DETAIL));
+
+        mvc.perform(post("/internal/v1/evaluation-jobs").header("X-CodeLobby-Internal-Key", KEY)
+                        .contentType(MediaType.APPLICATION_JSON).content(EVALUATION))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("HTTP_ERROR"))
+                .andExpect(jsonPath("$.retryable").value(false))
                 .andExpect(content().string(not(containsString(PRIVATE_DETAIL))));
     }
 

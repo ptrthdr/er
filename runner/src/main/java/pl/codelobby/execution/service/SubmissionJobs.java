@@ -1,8 +1,10 @@
 package pl.codelobby.execution.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PreDestroy;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.HexFormat;
 import java.util.LinkedHashMap;
@@ -11,11 +13,11 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
+import pl.codelobby.execution.api.ApiError;
 import pl.codelobby.execution.api.SubmissionResponse;
 import pl.codelobby.execution.api.TrustedEvaluationRequest;
+import pl.codelobby.execution.common.error.ApiException;
 
 /** In-memory job coordination. Persistent submission storage belongs to the main backend. */
 @Service
@@ -23,7 +25,7 @@ public class SubmissionJobs {
     private static final Logger log = LoggerFactory.getLogger(SubmissionJobs.class);
     public enum State { QUEUED, RUNNING, FINISHED, FAILED }
     public record Snapshot(String submissionId, State state, Instant createdAt,
-                           Instant startedAt, Instant finishedAt, SubmissionResponse result, pl.codelobby.execution.api.ApiError error) { }
+                           Instant startedAt, Instant finishedAt, SubmissionResponse result, ApiError error) { }
     private static final long RETENTION_SECONDS = 1800;
     private final LinkedHashMap<String, Job> jobs = new LinkedHashMap<>();
     private final ExecutionService engine;
@@ -37,7 +39,7 @@ public class SubmissionJobs {
         State state = State.QUEUED;
         Instant started, finished;
         SubmissionResponse result;
-        pl.codelobby.execution.api.ApiError error;
+        ApiError error;
         Job(String id, String fingerprint) { this.id = id; this.fingerprint = fingerprint; }
         Snapshot snapshot() { return new Snapshot(id, state, created, started, finished, result, error); }
     }
@@ -56,42 +58,47 @@ public class SubmissionJobs {
         String fingerprint;
         try {
             byte[] bytes = mapper.writeValueAsBytes(request);
-            if (bytes.length > 2_000_000) throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE, "Zgłoszenie przekracza 2 MB");
+            if (bytes.length > SourceBundle.MAX_BODY_BYTES) throw new PayloadTooLargeException();
             fingerprint = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes));
-        } catch (ResponseStatusException e) { throw e; }
-        catch (Exception e) { throw new IllegalStateException("Cannot fingerprint submission", e); }
+        } catch (JsonProcessingException | NoSuchAlgorithmException e) {
+            throw new IllegalStateException("Cannot fingerprint submission", e);
+        }
         Job previous = jobs.get(request.submissionId());
         if (previous != null) {
             if (!previous.fingerprint.equals(fingerprint))
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "submissionId już użyte dla innych danych");
+                throw new SubmissionIdConflictException();
             return previous.snapshot();
         }
-        if (jobs.size() >= 100) throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Magazyn wyników jest pełny; spróbuj później");
+        if (jobs.size() >= 100) throw new QueueCapacityExceededException();
         Job job = new Job(request.submissionId(), fingerprint);
         jobs.put(job.id, job);
         try { executor.execute(() -> evaluate(job, request)); }
         catch (java.util.concurrent.RejectedExecutionException e) {
             jobs.remove(job.id);
-            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Kolejka jest pełna; spróbuj później");
+            throw new QueueCapacityExceededException();
         }
         return job.snapshot();
     }
     public synchronized Snapshot get(String id) {
         expire();
         Job job = jobs.get(id);
-        if (job == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Nie znaleziono zgłoszenia lub wynik wygasł");
+        if (job == null) throw new JobNotFoundException();
         return job.snapshot();
     }
     private void evaluate(Job job, TrustedEvaluationRequest request) {
         SubmissionResponse result = null;
-        pl.codelobby.execution.api.ApiError error = null;
+        ApiError error = null;
         try { result = engine.submitQueued(request, () -> {
             synchronized (this) { job.state = State.RUNNING; job.started = Instant.now(); }
         }); }
-        catch (InvalidEvaluationException e) { error = new pl.codelobby.execution.api.ApiError("INVALID_REQUEST", "Nieprawidłowe dane oceny", false); }
+        catch (ApiException e) { error = ApiError.from(e); }
+        catch (ExecutionEngineUnavailableException e) {
+            log.warn("Execution engine unavailable for job {}", job.id, e);
+            error = ApiError.executionUnavailable();
+        }
         catch (Exception e) {
             log.error("Evaluation job {} failed", job.id, e);
-            error = new pl.codelobby.execution.api.ApiError("EXECUTION_UNAVAILABLE", "Nie udało się ukończyć oceny", true);
+            error = ApiError.internalServerError();
         }
         synchronized (this) {
             job.result = result; job.error = error; job.finished = Instant.now();
